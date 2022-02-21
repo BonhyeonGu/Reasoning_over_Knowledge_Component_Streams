@@ -1,5 +1,16 @@
 import requests
 from bs4 import BeautifulSoup
+import util
+import math
+import time
+import datetime
+
+import pywikibot as pw
+import wikipedia as wi
+import requests
+
+import threading
+import queue
 
 class Crawling:
     #입력 : 컨셉, 리턴 : 집합
@@ -21,29 +32,100 @@ class Crawling:
         for tag in tags:
             #중복되지 않았다면, (명확성 안내 링크 삭제, ?자기이름 링크 삭제?, 파일이 아니면, 세미콜론 들어가는거만 빼주면 될거같다.)
             if (tag['href'] not in ret)and(':' not in tag['href']):
-                ret.add(tag['href'])
+                ret.add(tag['href'].split('/')[2])#/wiki/~
         return ret
-  
-    #getAnkers와 흡사하지만 추가 조건이 붙는다.
-    #컨셉은 해당 조건으로 탈락된다. 컨셉으로 가는 하이퍼링크가 있는 페이지들 중에 맨션으로 가는 링크가 있는 페이지들을 새알린 뒤 2개 미만이면 탈락된다.
-    def getConcepts(self, mention):
-        ret = set()
-        noms = self.getAnkers(mention)
-        for nom in noms:
-            c = 0
-            pages = self.getPageInConceptLink(nom)
-
+   
     #해당 단어로 향하는 하이퍼링크가 있는 페이지를 찾는다.Lc
     def getPageInConceptLink(self, p):
         ret = set()
-        url = "https://en.wikipedia.org/w/index.php?title=Special:WhatLinksHere/" + p + "&limit=50000"
-        soup = self.urlToSoup(url)
+        soup = self.urlToSoup("https://en.wikipedia.org/w/index.php?title=Special:WhatLinksHere/" + p + "&limit=5000")
         tag = soup.select_one('#mw-whatlinkshere-list')
         if tag != None:
             tags = tag.select("a[href^='/wiki/']")
             for tag in tags:
                 if ':' not in tag['href']:
                     ret.add(tag['href'].split('/')[2])#/wiki/~
+        return ret
+
+    #해당 단어로 향하는 하이퍼링크가 있는 페이지를 찾는다.Lc
+    #생각해봤는데... 큐에 넣는 리스트 그 리스트 첫번째를 컨셉명으로 해야 정상적으로 토스가 가능할듯?
+    def THREAD_getPageInConceptLink(self, concepts, que):
+        ret = []#[concept, set(page,page..), concept, set()]
+        for concept in concepts:
+            ret.append(concept)
+            tmp = set()
+            soup = self.urlToSoup("https://en.wikipedia.org/w/index.php?title=Special:WhatLinksHere/" + concept + "&limit=5000")
+            tag = soup.select_one('#mw-whatlinkshere-list')
+            if tag != None:
+                tags = tag.select("a[href^='/wiki/']")
+                for tag in tags:
+                    if ':' not in tag['href']:
+                        tmp.add(tag['href'].split('/')[2])#/wiki/~
+            ret.append(tmp)
+        que.put(ret)
+        return
+
+    #getAnkers와 흡사하지만 추가 조건이 붙는다.
+    #컨셉은 해당 조건으로 탈락된다. 컨셉으로 가는 하이퍼링크가 있는 페이지들 중에 맨션으로 가는 링크가 있는 페이지들을 새알린 뒤 2개 미만이면 탈락된다.
+    def getConcepts(self, mention):
+        ret = set()
+        pagesInMention = self.getPageInConceptLink(mention)
+        concepts = self.getAnkers(mention)#컨셉 후보
+        x=0
+        for concept in concepts:
+            pagesInConcept = self.getPageInConceptLink(concept)
+            x+=1
+            if len(pagesInMention & pagesInConcept) >= 2:
+                ret.add(concept)
+        print(x)
+        return ret
+
+    def getConcepts2(self, mention):
+        ret = set()
+        pagesInMention = self.getPageInConceptLink(mention)
+        concepts = self.getAnkers(mention)#컨셉 후보
+        #THREAD++++++++++++++++
+        sCOUNT=25
+        #++++++++++++++++++++++
+        #concepts를 여러개로 쪼개기----------------------------------
+        i = 0
+        conceptsSplit = []
+        tmpList = []
+        for concept in concepts:
+            tmpList.append(concept)
+            i += 1
+            if i % sCOUNT == 0:
+                conceptsSplit.append(tmpList)
+                print(len(tmpList))
+                tmpList = []
+        conceptsSplit.append(tmpList)
+        print(len(tmpList))
+        #----------------------------------------            
+        ths = []
+        thsPacks = queue.Queue()
+        #쓰레드 실행---------------------------------
+        for concepts in conceptsSplit:
+            th = threading.Thread(target=self.THREAD_getPageInConceptLink, args=(concepts, thsPacks))
+            th.daemon = True
+            th.start()
+            ths.append(th)
+        #----------------------------------------  
+        for th in ths:
+            th.join()
+        #----------------------------------------  
+        x = 0
+        while not thsPacks.empty():
+            thsPack = thsPacks.get()
+            i = 0
+            end = len(thsPack) / 2
+            while i < end:
+                concept = thsPack[i]
+                pagesInConcept = thsPack[i + 1]
+                x+=1
+                if len(pagesInMention & pagesInConcept) >= 2:
+                    ret.add(concept)
+                i += 2
+        print(x)
         return ret
 
     #PR0를 구하는 공식에서 분모로 사용될 내용, 정수 리턴
@@ -56,4 +138,14 @@ class Crawling:
         return int(tag.text.replace(',', ''))
 
 c = Crawling()
-print(c.getPageInConceptLink('cat'))
+
+print(len(c.getAnkers('cat')))
+
+timeStart = time.time()
+a=c.getPageInConceptLink('dog')
+print(a)
+print(len(a))
+timeEnd = time.time()
+sec = timeEnd - timeStart
+result_list = str(datetime.timedelta(seconds=sec))
+print(result_list)
