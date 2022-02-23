@@ -1,16 +1,14 @@
 import requests
 from bs4 import BeautifulSoup
-import util
-import math
+from threading import Thread
+from queue import Queue
+
+from util import Util
+
+from multiprocessing import Process, freeze_support, Pool
+from functools import partial
 import time
 import datetime
-
-import pywikibot as pw
-import wikipedia as wi
-import requests
-
-import threading
-import queue
 
 class Crawling:
     #입력 : 컨셉, 리턴 : 집합
@@ -20,7 +18,7 @@ class Crawling:
         return soup
 
     #해당 멘션 페이지의 컨셉들을 찾는다. 존재하지 않는 멘션이라는 것도 여기서 필터링 된다. 존재하지 않는 멘션이면 return None
-    def getAnkers(self, mention):
+    def getLinks(self, mention):
         ret = set()
         soup = self.urlToSoup('https://en.wikipedia.org/wiki/' + mention)
         tag = soup.select_one('#noarticletext > tbody > tr > td > b')
@@ -35,10 +33,10 @@ class Crawling:
                 ret.add(tag['href'].split('/')[2])#/wiki/~
         return ret
    
-    #해당 단어로 향하는 하이퍼링크가 있는 페이지를 찾는다.Lc
-    def getPageInConceptLink(self, p):
+    #해당 단어로 향하는 하이퍼링크가 있는 페이지를 찾는다.Lc 이것을 위키에서는 백링크라 부르더라
+    def getBacklinks(self, p):
         ret = set()
-        soup = self.urlToSoup("https://en.wikipedia.org/w/index.php?title=Special:WhatLinksHere/" + p + "&limit=5000")
+        soup = self.urlToSoup("https://en.wikipedia.org/w/index.php?title=Special%3AWhatLinksHere&limit=5000&target=" + p + "&namespace=0")
         tag = soup.select_one('#mw-whatlinkshere-list')
         if tag != None:
             tags = tag.select("a[href^='/wiki/']")
@@ -49,83 +47,50 @@ class Crawling:
 
     #해당 단어로 향하는 하이퍼링크가 있는 페이지를 찾는다.Lc
     #생각해봤는데... 큐에 넣는 리스트 그 리스트 첫번째를 컨셉명으로 해야 정상적으로 토스가 가능할듯?
-    def THREAD_getPageInConceptLink(self, concepts, que):
-        ret = []#[concept, set(page,page..), concept, set()]
+    def THREAD_getConcepts(self, concepts, que):
+        ret = []
         for concept in concepts:
             ret.append(concept)
-            tmp = set()
-            soup = self.urlToSoup("https://en.wikipedia.org/w/index.php?title=Special:WhatLinksHere/" + concept + "&limit=5000")
-            tag = soup.select_one('#mw-whatlinkshere-list')
-            if tag != None:
-                tags = tag.select("a[href^='/wiki/']")
-                for tag in tags:
-                    if ':' not in tag['href']:
-                        tmp.add(tag['href'].split('/')[2])#/wiki/~
-            ret.append(tmp)
+            ret.append(self.getBacklinks(concept))
         que.put(ret)
         return
 
     #getAnkers와 흡사하지만 추가 조건이 붙는다.
     #컨셉은 해당 조건으로 탈락된다. 컨셉으로 가는 하이퍼링크가 있는 페이지들 중에 맨션으로 가는 링크가 있는 페이지들을 새알린 뒤 2개 미만이면 탈락된다.
-    def getConcepts(self, mention):
+    def getConceptsSingle(self, mention):
         ret = set()
-        pagesInMention = self.getPageInConceptLink(mention)
-        concepts = self.getAnkers(mention)#컨셉 후보
-        x=0
+        pagesInMention = self.getBacklinks(mention)
+        concepts = self.getLinks(mention)#컨셉 후보
         for concept in concepts:
-            pagesInConcept = self.getPageInConceptLink(concept)
-            x+=1
+            pagesInConcept = self.getBacklinks(concept)
             if len(pagesInMention & pagesInConcept) >= 2:
                 ret.add(concept)
-        print(x)
         return ret
 
-    def getConcepts2(self, mention):
+    def getConceptsMultiThread(self, mention):
         ret = set()
-        pagesInMention = self.getPageInConceptLink(mention)
-        concepts = self.getAnkers(mention)#컨셉 후보
-        #THREAD++++++++++++++++
-        sCOUNT=25
-        #++++++++++++++++++++++
-        #concepts를 여러개로 쪼개기----------------------------------
-        i = 0
-        conceptsSplit = []
-        tmpList = []
-        for concept in concepts:
-            tmpList.append(concept)
-            i += 1
-            if i % sCOUNT == 0:
-                conceptsSplit.append(tmpList)
-                print(len(tmpList))
-                tmpList = []
-        conceptsSplit.append(tmpList)
-        print(len(tmpList))
-        #----------------------------------------            
+        TC = 12
+        pagesInMention = self.getBacklinks(mention)
+        concepts = list(self.getLinks(mention))#컨셉 후보
+        conceptss = Util.splitList(concepts, TC)
         ths = []
-        thsPacks = queue.Queue()
-        #쓰레드 실행---------------------------------
-        for concepts in conceptsSplit:
-            th = threading.Thread(target=self.THREAD_getPageInConceptLink, args=(concepts, thsPacks))
+        packss = Queue(maxsize=0)
+
+        for concepts in conceptss:
+            th = Thread(target=self.THREAD_getConcepts, args=(concepts, packss,))
             th.daemon = True
             th.start()
             ths.append(th)
-        #----------------------------------------  
         for th in ths:
             th.join()
-        #----------------------------------------  
-        x = 0
-        while not thsPacks.empty():
-            thsPack = thsPacks.get()
-            i = 0
-            end = len(thsPack) / 2
-            while i < end:
-                concept = thsPack[i]
-                pagesInConcept = thsPack[i + 1]
-                x+=1
-                if len(pagesInMention & pagesInConcept) >= 2:
-                    ret.add(concept)
-                i += 2
-        print(x)
+        while not packss.empty():
+            packs = packss.get()
+            idx = 0
+            size = len(packs)
+            while idx < size:
+                if len(pagesInMention & packs[idx+1]) >= 2:
+                    ret.add(packs[idx])
+                idx += 2
         return ret
 
     #PR0를 구하는 공식에서 분모로 사용될 내용, 정수 리턴
@@ -137,15 +102,13 @@ class Crawling:
             return 0
         return int(tag.text.replace(',', ''))
 
-c = Crawling()
-
-print(len(c.getAnkers('cat')))
-
-timeStart = time.time()
-a=c.getPageInConceptLink('dog')
-print(a)
-print(len(a))
-timeEnd = time.time()
-sec = timeEnd - timeStart
-result_list = str(datetime.timedelta(seconds=sec))
-print(result_list)
+if __name__ == '__main__':
+    c = Crawling()
+    timeStart = time.time()
+    a=c.getConceptsMultiThread('apple')
+    print(a)
+    print(len(a))
+    timeEnd = time.time()
+    sec = timeEnd - timeStart
+    result_list = str(datetime.timedelta(seconds=sec))
+    print(result_list)
