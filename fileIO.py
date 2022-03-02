@@ -49,7 +49,7 @@ class FileIO():
         else:
             ret = set()
             f = open(sett[0] + filename, 'r')
-            lines = f.readlines()
+            lines = f.read().split('\n')
             size = len(lines) - 1
             for i in range(size):
                 ret.add(lines[i])

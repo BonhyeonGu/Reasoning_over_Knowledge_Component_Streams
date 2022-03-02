@@ -11,8 +11,6 @@ from functools import partial
 import time
 import datetime
 
-
-
 class Crawling:
     def __init__(self):
         self.fc = FileIO()
@@ -58,15 +56,20 @@ class Crawling:
    
     #해당 단어로 향하는 하이퍼링크가 있는 페이지를 찾는다.Lc 이것을 위키에서는 백링크라 부르더라
     def getBacklinks(self, p):
-        ret = set()
-        soup = self.urlToSoup("https://en.wikipedia.org/w/index.php?title=Special%3AWhatLinksHere&limit=5000&target=" + p + "&namespace=0")
-        tag = soup.select_one('#mw-whatlinkshere-list')
-        if tag != None:
-            tags = tag.select("a[href^='/wiki/']")
-            for tag in tags:
-                if ':' not in tag['href']:
-                    ret.add(tag['href'].split('/')[2])#/wiki/~
-        return ret
+        cheack = self.fc.getCache(2, p)
+        if cheack != -1:
+            return cheack
+        else:
+            ret = set()
+            soup = self.urlToSoup("https://en.wikipedia.org/w/index.php?title=Special%3AWhatLinksHere&limit=5000&target=" + p + "&namespace=0")
+            tag = soup.select_one('#mw-whatlinkshere-list')
+            if tag != None:
+                tags = tag.select("a[href^='/wiki/']")
+                for tag in tags:
+                    if ':' not in tag['href']:
+                        ret.add(tag['href'].split('/')[2])#/wiki/~
+            self.fc.setToFile(2, p, ret)
+            return ret
 
     #해당 단어로 향하는 하이퍼링크가 있는 페이지를 찾는다.Lc
     #생각해봤는데... 큐에 넣는 리스트 그 리스트 첫번째를 컨셉명으로 해야 정상적으로 토스가 가능할듯?
@@ -82,30 +85,35 @@ class Crawling:
     #컨셉은 해당 조건으로 탈락된다. 컨셉으로 가는 하이퍼링크가 있는 페이지들 중에 맨션으로 가는 링크가 있는 페이지들을 새알린 뒤 2개 미만이면 탈락된다.
     #해당 함수는 멀티 쓰레딩이다.
     def getConcepts(self, mention):
-        ret = set()
-        TC = 12
-        pagesInMention = self.getBacklinks(mention)
-        concepts = list(self.getLinks(mention))#컨셉 후보
-        conceptss = Util.splitList(concepts, TC)
-        ths = []
-        packss = Queue(maxsize=0)
+        cheack = self.fc.getCache(3, mention)
+        if cheack != -1:
+            return cheack
+        else:
+            ret = set()
+            TC = 12
+            pagesInMention = self.getBacklinks(mention)
+            concepts = list(self.getLinks(mention))#컨셉 후보
+            conceptss = Util.splitList(concepts, TC)
+            ths = []
+            packss = Queue(maxsize=0)
 
-        for concepts in conceptss:
-            th = Thread(target=self.THREAD_getConcepts, args=(concepts, packss,))
-            th.daemon = True
-            th.start()
-            ths.append(th)
-        for th in ths:
-            th.join()
-        while not packss.empty():
-            packs = packss.get()
-            idx = 0
-            size = len(packs)
-            while idx < size:
-                if len(pagesInMention & packs[idx+1]) >= 2:
-                    ret.add(packs[idx])
-                idx += 2
-        return ret
+            for concepts in conceptss:
+                th = Thread(target=self.THREAD_getConcepts, args=(concepts, packss,))
+                th.daemon = True
+                th.start()
+                ths.append(th)
+            for th in ths:
+                th.join()
+            while not packss.empty():
+                packs = packss.get()
+                idx = 0
+                size = len(packs)
+                while idx < size:
+                    if len(pagesInMention & packs[idx+1]) >= 2:
+                        ret.add(packs[idx])
+                    idx += 2
+            self.fc.setToFile(3, mention, ret)
+            return ret
 
     #PR0를 구하는 공식에서 분모로 사용될 내용, 정수 리턴
     def getPR0den(self, u):
@@ -119,7 +127,7 @@ class Crawling:
 if __name__ == '__main__':
     c = Crawling()
     timeStart = time.time()
-    a=c.getLinks('cat')
+    a=c.getConcepts('cat')
     print(a)
     print(len(a))
     timeEnd = time.time()
