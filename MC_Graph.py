@@ -1,5 +1,5 @@
 from cmath import log10
-
+from crawling import Crawling
 
 class Vertex:
     def __init__(self, type, name):
@@ -56,7 +56,7 @@ class Edge:
     def printing(self):
         print(self.type)
 
-def calcEntrophy(allBacklinksNum, asAnchortextNum):#mention A 에 대한 entrophy를 구한다
+def calcEntrophy(allBacklinksNum:set, asAnchortextNum:set):#mention A 에 대한 entrophy를 구한다
     #allBacklinksNum = A로 인해 발생한 concept후보들 각각의 전체 백링크 수
     #asAnchortextNum = 위의 백링크들 중에서 앵커텍스트가 A인 링크개수
 
@@ -70,9 +70,12 @@ def calcEntrophy(allBacklinksNum, asAnchortextNum):#mention A 에 대한 entroph
 
     return sum
     
-li = ['10','5']
-li2 = ['101','5']
-w=Edge.conceptToConcept(li,li2,20)
-w1=Edge(0)
-w2=Edge(0)
-w3=Edge(0)
+def getAnnotation(text, numberOfAnnotation):
+    #텍스트는 공백문자만 들어있다고 가정
+    #다른 문자가 들어있으면 나중에 따로 파싱함수 만들어야됨
+    li = text.split(" ")
+
+    for i in li:#쪼갠 본문의 단어를 하나씩 계산한다
+        backlinks = Crawling.getBacklinks(i)
+        
+    return
