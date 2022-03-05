@@ -33,13 +33,14 @@ class Crawling:
         soup = BeautifulSoup(req.text, 'lxml')
         return soup
 
-    #해당 멘션 페이지의 앵커들을 찾는다. !!!존재하지 않는 멘션이라는 것도 여기서 필터링 된다. 존재하지 않는 멘션이면 return None!!! <---이거 뺄 예정
+    #해당 멘션 페이지의 앵커링크들을 찾는다. !!!존재하지 않는 멘션이라는 것도 여기서 필터링 된다. 존재하지 않는 멘션이면 return None!!! <---이거 뺄 예정
     def getLinks(self, mention):
         cheack = self.fc.getCache(1, mention)
         if cheack != -1:
             return cheack
         else:
-            ret = set()
+            ret_links = set()
+            ret_texts = set()
             soup = self.urlToSoupOnlyNormal(mention)
             tag = soup.select_one('#noarticletext > tbody > tr > td > b')
             #존재하지 않는 검색어라는 메세지 발생시 None을 리턴
@@ -49,14 +50,40 @@ class Crawling:
             tags = tag.select("a[href^='/wiki/']")
             for tag in tags:
                 #중복되지 않았다면, (명확성 안내 링크 삭제, ?자기이름 링크 삭제?, 파일이 아니면, 세미콜론 들어가는거만 빼주면 될거같다.)
-                if (tag['href'] not in ret)and(':' not in tag['href']):
-                    ret.add(tag['href'].split('/')[2])#/wiki/~
-            self.fc.setToFile(1, mention, ret)
-            return ret
+                if (tag['href'] not in ret_links)and(':' not in tag['href']):
+                    ret_links.add(tag['href'].split('/')[2])#/wiki/~
+                    ret_texts.add(tag.text)
+            self.fc.setToFile(1, mention, ret_links)
+            self.fc.setToFile(2, mention, ret_texts)
+            return ret_links
    
+    #해당 멘션 페이지의 앵커텍스트들을 찾는다.
+    def getTexts(self, mention):
+        cheack = self.fc.getCache(2, mention)
+        if cheack != -1:
+            return cheack
+        else:
+            ret_links = set()
+            ret_texts = set()
+            soup = self.urlToSoupOnlyNormal(mention)
+            tag = soup.select_one('#noarticletext > tbody > tr > td > b')
+            #존재하지 않는 검색어라는 메세지 발생시 None을 리턴
+            if tag is not None:
+                return None
+            tag = soup.select_one('#mw-content-text')
+            tags = tag.select("a[href^='/wiki/']")
+            for tag in tags:
+                #중복되지 않았다면, (명확성 안내 링크 삭제, ?자기이름 링크 삭제?, 파일이 아니면, 세미콜론 들어가는거만 빼주면 될거같다.)
+                if (tag.text not in ret_texts)and(':' not in tag['href']):
+                    ret_links.add(tag['href'].split('/')[2])#/wiki/~
+                    ret_texts.add(tag.text)
+            self.fc.setToFile(1, mention, ret_links)
+            self.fc.setToFile(2, mention, ret_texts)
+            return ret_texts
+
     #해당 단어로 향하는 하이퍼링크가 있는 페이지를 찾는다.Lc 이것을 위키에서는 백링크라 부르더라
     def getBacklinks(self, p):
-        cheack = self.fc.getCache(2, p)
+        cheack = self.fc.getCache(3, p)
         if cheack != -1:
             return cheack
         else:
@@ -85,7 +112,7 @@ class Crawling:
     #컨셉은 해당 조건으로 탈락된다. 컨셉으로 가는 하이퍼링크가 있는 페이지들 중에 맨션으로 가는 링크가 있는 페이지들을 새알린 뒤 2개 미만이면 탈락된다.
     #해당 함수는 멀티 쓰레딩이다.
     def getConcepts(self, mention):
-        cheack = self.fc.getCache(3, mention)
+        cheack = self.fc.getCache(4, mention)
         if cheack != -1:
             return cheack
         else:
@@ -124,10 +151,20 @@ class Crawling:
             return 0
         return int(tag.text.replace(',', ''))
 
+
 if __name__ == '__main__':
     c = Crawling()
     timeStart = time.time()
-    a=c.getConcepts('cat')
+    a=c.getTexts('cat')
+    print(a)
+    print(len(a))
+    timeEnd = time.time()
+    sec = timeEnd - timeStart
+    result_list = str(datetime.timedelta(seconds=sec))
+    print(result_list)
+
+    timeStart = time.time()
+    a=c.getLinks('cat')
     print(a)
     print(len(a))
     timeEnd = time.time()
