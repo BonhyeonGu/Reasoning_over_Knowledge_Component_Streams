@@ -2,6 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 from threading import Thread
 from queue import Queue
+from time import time
+from random import uniform
 
 from util import Util
 from fileIO import FileIO
@@ -23,13 +25,36 @@ class Crawling:
         if cheack != -1:
             soup = BeautifulSoup(cheack, 'lxml')
         else:
-            req = requests.get('https://en.wikipedia.org/wiki/' + keyword)
+            try:
+                req = requests.get('https://en.wikipedia.org/wiki/' + keyword)
+            except Exception as e:
+                time.sleep(uniform(0.5, 1.5))
+                try:
+                    req = requests.get('https://en.wikipedia.org/wiki/' + keyword)
+                except Exception as e:
+                    time.sleep(uniform(0.5, 1.5))
+                    try:
+                        req = requests.get('https://en.wikipedia.org/wiki/' + keyword)
+                    except Exception as e:
+                        print("오류!!! urlToSoupOnlyNormal 커넥션 실패")
             self.fc.setToFile(0, keyword, req.text)
             soup = BeautifulSoup(req.text, 'lxml')
         return soup
 
     def urlToSoup(self, url):
-        req = requests.get(url)
+        try:
+            req = requests.get(url)
+        except Exception as e:
+            time.sleep(uniform(0.5, 1.5))
+            try:
+                req = requests.get(url)
+            except Exception as e:
+                time.sleep(uniform(0.5, 1.5))
+                try:
+                    req = requests.get(url)
+                except Exception as e:
+                    print("오류!!! urlToSoup 커넥션 실패")
+
         soup = BeautifulSoup(req.text, 'lxml')
         return soup
 
@@ -51,7 +76,7 @@ class Crawling:
             for tag in tags:
                 #중복되지 않았다면, (명확성 안내 링크 삭제, ?자기이름 링크 삭제?, 파일이 아니면, 세미콜론 들어가는거만 빼주면 될거같다.)
                 if (tag['href'] not in ret_links)and(':' not in tag['href']):
-                    ret_links.add(tag['href'].split('/')[2])#/wiki/~
+                    ret_links.add(tag['href'].split('/wiki/')[1])#/wiki/~
                     ret_texts.add(tag.text)
             self.fc.setToFile(1, mention, ret_links)
             self.fc.setToFile(2, mention, ret_texts)
@@ -75,7 +100,7 @@ class Crawling:
             for tag in tags:
                 #중복되지 않았다면, (명확성 안내 링크 삭제, ?자기이름 링크 삭제?, 파일이 아니면, 세미콜론 들어가는거만 빼주면 될거같다.)
                 if (tag.text not in ret_texts)and(':' not in tag['href']):
-                    ret_links.add(tag['href'].split('/')[2])#/wiki/~
+                    ret_links.add(tag['href'].split('/wiki/')[1])#/wiki/~
                     ret_texts.add(tag.text)
             self.fc.setToFile(1, mention, ret_links)
             self.fc.setToFile(2, mention, ret_texts)
@@ -94,8 +119,8 @@ class Crawling:
                 tags = tag.select("a[href^='/wiki/']")
                 for tag in tags:
                     if ':' not in tag['href']:
-                        ret.add(tag['href'].split('/')[2])#/wiki/~
-            self.fc.setToFile(2, p, ret)
+                        ret.add(tag['href'].split('/wiki/')[1])#/wiki/~
+            self.fc.setToFile(3, p, ret)
             return ret
 
     #해당 단어로 향하는 하이퍼링크가 있는 페이지를 찾는다.Lc
@@ -107,40 +132,6 @@ class Crawling:
             ret.append(self.getBacklinks(concept))
         que.put(ret)
         return
-
-    #getLinks와 흡사하지만 추가 조건이 붙는다.
-    #컨셉은 해당 조건으로 탈락된다. 컨셉으로 가는 하이퍼링크가 있는 페이지들 중에 맨션으로 가는 링크가 있는 페이지들을 새알린 뒤 2개 미만이면 탈락된다.
-    #해당 함수는 멀티 쓰레딩이다.
-    def getConcepts(self, mention):
-        cheack = self.fc.getCache(4, mention)
-        if cheack != -1:
-            return cheack
-        else:
-            ret = set()
-            TC = 12
-            pagesInMention = self.getBacklinks(mention)
-            concepts = list(self.getLinks(mention))#컨셉 후보
-            conceptss = Util.splitList(concepts, TC)
-            ths = []
-            packss = Queue(maxsize=0)
-
-            for concepts in conceptss:
-                th = Thread(target=self.THREAD_getConcepts, args=(concepts, packss,))
-                th.daemon = True
-                th.start()
-                ths.append(th)
-            for th in ths:
-                th.join()
-            while not packss.empty():
-                packs = packss.get()
-                idx = 0
-                size = len(packs)
-                while idx < size:
-                    if len(pagesInMention & packs[idx+1]) >= 2:
-                        ret.add(packs[idx])
-                    idx += 2
-            self.fc.setToFile(3, mention, ret)
-            return ret
 
     #PR0를 구하는 공식에서 분모로 사용될 내용, 정수 리턴
     def getPR0den(self, u):
@@ -155,15 +146,6 @@ class Crawling:
 if __name__ == '__main__':
     c = Crawling()
     timeStart = time.time()
-    a=c.getTexts('cat')
-    print(a)
-    print(len(a))
-    timeEnd = time.time()
-    sec = timeEnd - timeStart
-    result_list = str(datetime.timedelta(seconds=sec))
-    print(result_list)
-
-    timeStart = time.time()
     a=c.getLinks('cat')
     print(a)
     print(len(a))
@@ -171,3 +153,4 @@ if __name__ == '__main__':
     sec = timeEnd - timeStart
     result_list = str(datetime.timedelta(seconds=sec))
     print(result_list)
+    input()
