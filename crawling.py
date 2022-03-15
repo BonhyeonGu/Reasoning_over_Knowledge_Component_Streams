@@ -21,24 +21,24 @@ class Crawling:
     #원래는 urlToSoup함수에 캐시 저장/불러오기를 만들려고 했으나, 해당 함수는 일반 위키페이지를 포함한 모든 페이지에 사용되기에(ex역링크)
     #올바르지 않았다. 따라서 일반 위키 페이지를 검색하는 함수를 전용으로 만드는게 괜찮겠다.
     def urlToSoupOnlyNormal(self, keyword):
-        cheack = self.fc.getCache(0, keyword)
-        if cheack != -1:
-            soup = BeautifulSoup(cheack, 'lxml')
-        else:
+        try:
+            req = requests.get('https://en.wikipedia.org/wiki/' + keyword)
+        except Exception as e:
+            time.sleep(uniform(0.5, 1.0))
             try:
                 req = requests.get('https://en.wikipedia.org/wiki/' + keyword)
             except Exception as e:
-                time.sleep(uniform(0.5, 1.5))
+                time.sleep(uniform(1.0, 1.5))
                 try:
                     req = requests.get('https://en.wikipedia.org/wiki/' + keyword)
                 except Exception as e:
-                    time.sleep(uniform(0.5, 1.5))
-                    try:
-                        req = requests.get('https://en.wikipedia.org/wiki/' + keyword)
-                    except Exception as e:
-                        print("오류!!! urlToSoupOnlyNormal 커넥션 실패")
-            self.fc.setToFile(0, keyword, req.text)
-            soup = BeautifulSoup(req.text, 'lxml')
+                    print("오류!!! urlToSoupOnlyNormal 커넥션 실패")
+        soup = BeautifulSoup(req.text, 'lxml')
+        tag = soup.select_one('#mw-content-text')
+        # if tag == None:
+        #     time.sleep(uniform(4.5, 5.5))
+        #     self.urlToSoupOnlyNormal(keyword)
+        #self.fc.setToFile(0, keyword, req.text)
         return soup
 
     def urlToSoup(self, url):
@@ -123,15 +123,15 @@ class Crawling:
             self.fc.setToFile(3, p, ret)
             return ret
 
-    #해당 단어로 향하는 하이퍼링크가 있는 페이지를 찾는다.Lc
-    #생각해봤는데... 큐에 넣는 리스트 그 리스트 첫번째를 컨셉명으로 해야 정상적으로 토스가 가능할듯?
-    def THREAD_getConcepts(self, concepts, que):
-        ret = []
-        for concept in concepts:
-            ret.append(concept)
-            ret.append(self.getBacklinks(concept))
-        que.put(ret)
-        return
+    def calcEntrophy(self, allBacklinksNum, asAnchortextNum):#mention A 에 대한 entrophy를 구한다
+        length = len(allBacklinksNum)#길이는 같은걸로 간주한다
+        sum=0
+        for i in range(length):
+            if(asAnchortextNum[i] == 0 or allBacklinksNum[i] == 0):#둘 중 하나라도 0이면 넘김
+                continue
+            temp = asAnchortextNum[i]/allBacklinksNum[i]
+            sum -= temp * math.log10(temp)
+        return sum
 
     #PR0를 구하는 공식에서 분모로 사용될 내용, 정수 리턴
     def getPR0den(self, u):
@@ -142,11 +142,10 @@ class Crawling:
             return 0
         return int(tag.text.replace(',', ''))
 
-
 if __name__ == '__main__':
     c = Crawling()
     timeStart = time.time()
-    a=c.getLinks('cat')
+    a=c.getLinks('P2pnet')
     print(a)
     print(len(a))
     timeEnd = time.time()
