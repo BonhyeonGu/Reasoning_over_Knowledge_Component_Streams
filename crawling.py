@@ -26,7 +26,7 @@ class Crawling:
                 break
             except Exception as e:
                 print("ERROR(AUTO RETRY), crawling.py, urlToSoupOnlyNormal, requests, LINE:28")
-                time.sleep(uniform(0.5, 1.0))                
+                time.sleep(uniform(1.5, 2.0))                
         soup = BeautifulSoup(req.text, 'lxml')
         # tag = soup.select_one('#mw-content-text')
         # if tag == None:
