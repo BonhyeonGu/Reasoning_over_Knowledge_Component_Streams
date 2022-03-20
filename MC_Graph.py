@@ -13,9 +13,9 @@ class Vertex:
         self.type = type#0: mention, 1:concept
         self.name = name#위키페이지 타이틀명
         self.PR0 = 0
-        self.PR = -1
-        self.oldPR = 0
+        self.PR = []
         self.edges = []
+        self.pointTo = []
 
 class Edge:
     def __init__(self, type):
@@ -136,7 +136,7 @@ class Graph:
 
         
     def getAnnotation(self, numberOfAnnotation:int):#text는 mention들의 리스트, numberOfAnnotation는 결과 단어 몇개 출력할지 정하는 변수
-        crl = Crawling()
+        #crl = Crawling()
 
         li = self.mentionList
 
@@ -152,7 +152,7 @@ class Graph:
             #concepts에 엔트로피 계산으로 한번 걸러낸 컨셉들을 저장, 안만들면 -1이 출력됨
             #-----------------------
             #컨셉 20개만 추려야함
-            concepts = crl.getConcepts(i)
+            concepts = self.craw.getConcepts(i)
             
             concepts = list(concepts)[:20]#디버그용으로 임시로 쪼갬
             #------------------------
@@ -170,23 +170,26 @@ class Graph:
                     nowConcept = self.conceptVertex[index]
 
                 edge = Edge(0)#mention to concept 엣지 생성
-                edge.calcMtoC(crl.getBacklinks(i),crl.getBacklinks(j))#P(가중치) 계산
-                edge.pointTo = nowConcept#컨셉노드와 엣지 연결
+                edge.calcMtoC(self.craw.getBacklinks(i),self.craw.getBacklinks(j))#P(가중치) 계산
+                edge.dest = nowConcept#컨셉노드와 엣지 연결
+                edge.start = nowMention;
                 nowMention.edges.append(edge)#멘션노드와 엣지 연결
             #하나의 멘션에대한 컨셉노드 연결 끝
         #모든 멘션에대한 노드 만들기 끝       
             
         #컨셉노드끼리의 간선 이어야함
         for i in range(0,len(self.conceptVertex)):#모든 간선을 돌리면 a노드가 b노드를 가리키고 b노드도 a노드를 가리키는 경우 발생, 
-            for j in range(0,len(self.conceptVertex)):#range안에 0을 i로 바꾸면 위에서 말한 이중간선은 없어질듯
+            for j in range(i,len(self.conceptVertex)):#range안에 0을 i로 바꾸면 위에서 말한 이중간선은 없어질듯
                 if(i == j):#자기자신을 가리키는 간선 안생김
                     continue
                 #i 에서 j로 가는 간선만듬
                 N = len(self.conceptVertex)
-                SR = self.calcSR(crl.getBacklinks(self.conceptVertex[i].name),crl.getBacklinks(self.conceptVertex[j].name),N)
+                SR = self.calcSR(self.craw.getBacklinks(self.conceptVertex[i].name),self.craw.getBacklinks(self.conceptVertex[j].name),N)
 
                 if(SR > 0):#SR값이 0보다커야 간선 추가함
                     edge = Edge.conceptToConcept(SR)
+                    edge.dest = j;
+                    edge.start = i;
                     self.conceptVertex[i].edges.append(edge)
         
         #모든 노드와 간선 생성완료
@@ -194,7 +197,7 @@ class Graph:
         #PR0 계산
         sum = 0
         for i in self.mentionVertex:#z를 제외한 계산 완료
-            i.PR0 = len(crl.getBacklinks(i.name))/crl.getPR0den(i.name)#Crawling에 만들어놓은거 그대로 사용
+            i.PR0 = len(self.craw.getBacklinks(i.name))/self.craw.getPR0den(i.name)#Crawling에 만들어놓은거 그대로 사용
             sum +=i.PR0
         z = 1/sum/len(self.mentionVertex)
         for i in self.mentionVertex:#z를 곱해줘서 계산 완료
@@ -210,7 +213,7 @@ class Graph:
                 j.P = j.SR/(sum-j.SR)
 
         #PR계산
-
+        self.calcPR(10)
         return#출력은 리스트로 할듯
     def compareConcepts(self, candidateConcept:str):#노드 이미있으면 해당하는 인덱스 출력 없으면 -1
         index = 0
@@ -240,18 +243,26 @@ class Graph:
         
         return SR 
 
-    def calcPR(mentionVertex:list, conceptVertex:list, repeat:int):
+    def calcPR(self, repeat:int):
+        #repeat:반복계산 횟수
+        allVertex = self.mentionVertex + self.conceptVertex
         r =0.1
         for i in range(repeat):
-            for j in mentionVertex:
-                j.PR = r *j.PR0  + (1-r)
+            new = i%2
+            old = (i+1)%2
+            for vertex in allVertex:
+                sum=0
+
+                for edge in vertex.pointTo:
+                    sum += edge.dest.PR[old] * edge.P
+                vertex.PR[new] = r *vertex.PR0  + (1-r)*sum
 
         return
 
 #ans = Graph(['testing', 'cat', 'rainbow']).getAnnotation(5)
-
+print("start")
 timeStart = time.time()
-g = Graph(['toy'])
+g = Graph(['rainbow'])
 timeEnd = time.time()
 sec = timeEnd - timeStart
 result_list = str(datetime.timedelta(seconds=sec))
