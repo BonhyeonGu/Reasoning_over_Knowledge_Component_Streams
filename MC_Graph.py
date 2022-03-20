@@ -44,16 +44,13 @@ class Graph:
         self.LOCK_BACKLINKS = RLock()
         self.LOCK_ANCHORTEXTS = RLock()
         #---------------------------------------------------
-        self.MAXENTROPHY = 100000
+        self.MAXENTROPHY = 1000.0
         #---------------------------------------------------
 
         #candidateMention가 리스트?
         #인정된 맨션들 (1차원 리스트)
-        self.mentions, self.conceptsOfMentions = self.getMentions(candidateMention)
-
-        #인정된 맨션들각각의 콘셉트들 (2차원 리스트)
-        self.mentions = self.getMentions(candidateMention)
-
+        self.mentions, self.conceptsOfMentions = self.getMentionsAndConcepts(candidateMention)
+#-------------------------------------------------------------------------------------------------------------------------------------------------------
     #allBacklinksNum = A로 인해 발생한 concept후보들 각각의 전체 백링크 수
     #asAnchortextNum = 위의 백링크들 중에서 앵커텍스트가 A인 링크개수
     def calcEntrophy(self, allBacklinksNum, asAnchortextNum):#mention A 에 대한 entrophy를 구한다
@@ -66,75 +63,100 @@ class Graph:
             sum -= temp * math.log10(temp)
         return sum
 
-    def THREAD_ANCHORTEXTS(self, men, inps, out):#컨셉텍스트, 백링크들, 갯수누적 정수
-        for inp in inps:
-            texts = self.craw.getTexts(inp)
+    def THREAD_ANCHORTEXTS(self, cMention, backlinkss_one, out):#컨셉텍스트, 백링크들, 갯수누적 정수
+        for backlink in backlinkss_one:
+            while True:
+                texts = self.craw.getTexts(backlink)
+                if texts != -1:
+                    break
+                print("ERROR(AUTO RETRY), MC_Graph.py, THREAD_ANCHORTEXTS, getTexts, LINE:72")
             try:
-                if men in texts:
+                if cMention in texts:
                     with self.LOCK_ANCHORTEXTS:#임계구역 락, 원래 앞에 단계에 락을 형성할 수 있음을 알고있으나 불안하다.
                         out[0] += 1
             except TypeError as e:
-                print('a')
+                print(e)
         return
 
-    def THREAD_BACKLINKS(self, men, inps, outs1:dict, outs2:dict):#컨셉후보들, 백링크사이즈들, 엥커텍스트가 포함된 백링크갯수들
-        for inp in inps:
-            backs = self.craw.getBacklinks(inp)
+    def THREAD_BACKLINKS(self, cMention, cConceptss_one, outs1:dict, outs2:dict):#컨셉후보들, 백링크사이즈들, 엥커텍스트가 포함된 백링크갯수들
+        for cConcept in cConceptss_one:
+            backlinks = self.craw.getBacklinks(cConcept)
             with self.LOCK_BACKLINKS:#임계구역 락
-                outs1[inp] = len(backs)
+                outs1[cConcept] = len(backlinks)
             #이후엔 또 작업이 쪼개짐    
-            backss = Util.splitList(backs, 6)
+            backlinkss = Util.splitList(backlinks, 6)
             threads = []
-            havecount = [0]
-            for backs in backss:
-                th = Thread(target=self.THREAD_ANCHORTEXTS, args=(men, backs, havecount, ))
+            havecount = [0]#얕은복사를 위함
+            for backlinkss_one in backlinkss:
+                th = Thread(target=self.THREAD_ANCHORTEXTS, args=(cMention, backlinkss_one, havecount, ))
                 th.daemon = True
                 th.start()
                 threads.append(th)
             for th in threads:
                 th.join()
             with self.LOCK_BACKLINKS:#임계구역 락, 개별로 만드는게 좋겠지만 역시 불안하다.
-                outs2[inp] = havecount[0]
+                outs2[cConcept] = havecount[0]
         return
 
-    def getMentions(self, candidateMentions):
+    def getMentionsAndConcepts(self, candidateMentions):
         mentions = []
         conceptsOfMentions = []
         for candidateMention in candidateMentions:
-            #----------------------------------------------------------------------------
-            candidateConcepts = list(self.craw.getLinks(candidateMention))
-            candidateConceptss = Util.splitList(candidateConcepts, 3)#x개로 쪼개짐
-            threads = []
-            threadsReturnBacklinksSize = dict()
-            threadsReturnBacklinksHaveText = dict()
-            for candidateConceptss_one in candidateConceptss:
-                th = Thread(target=self.THREAD_BACKLINKS, args=(candidateMention, candidateConceptss_one, threadsReturnBacklinksSize, threadsReturnBacklinksHaveText, ))
-                th.daemon = True
-                th.start()
-                threads.append(th)
-            for th in threads:
-                th.join()
-            #----------------------------------------------------------------------------
-            allBacklinksNum = []
-            asAnchortextNum = []
-            for candidateConcept in candidateConcepts:
-                allBacklinksNum.append(threadsReturnBacklinksSize[candidateConcept])
-                asAnchortextNum.append(threadsReturnBacklinksHaveText[candidateConcept])
-            #----------------------------------------------------------------------------
-            nowEntrophy = self.calcEntrophy(allBacklinksNum,asAnchortextNum)
-            print(nowEntrophy)
-            if nowEntrophy < self.MAXENTROPHY:
+            cheack = self.craw.fc.getCache(4, candidateMention)
+            #이미 구했던거라면
+            if cheack != -1 and cheack[0] < self.MAXENTROPHY:
                 mentions.append(candidateMention)
-            #----------------------------------------------------------------------------
-                print(candidateMention)
+                print(candidateMention)#!!
+                conceptsOfMentions.append(cheack[1:])
+            #아니라면
+            else:
+                #----------------------------------------------------------------------------
+                while True:
+                    candidateConcepts = list(self.craw.getLinks(candidateMention))
+                    if candidateConcepts != -1:
+                        break
+                    print("ERROR(AUTO RETRY), MC_Graph.py, getMentionsAndConcepts, getLinks, LINE:118")
+                candidateConceptss = Util.splitList(candidateConcepts, 4)#x개로 쪼개짐
+                threads = []
+                threadsReturnBacklinksSize = dict()
+                threadsReturnBacklinksHaveText = dict()
+                for candidateConceptss_one in candidateConceptss:
+                    th = Thread(target=self.THREAD_BACKLINKS, args=(candidateMention, candidateConceptss_one, threadsReturnBacklinksSize, threadsReturnBacklinksHaveText, ))
+                    th.daemon = True
+                    th.start()
+                    threads.append(th)
+                for th in threads:
+                    th.join()
+                #----------------------------------------------------------------------------
+                allBacklinksNum = []
+                asAnchortextNum = []
+                candidateConcept_AND_asAnchortextNum = []
+                for candidateConcept in candidateConcepts:
+                    allBacklinksNum.append(threadsReturnBacklinksSize[candidateConcept])
+                    asAnchortextNum.append(threadsReturnBacklinksHaveText[candidateConcept])
+                    candidateConcept_AND_asAnchortextNum.append((candidateConcept, threadsReturnBacklinksHaveText[candidateConcept]))
+                #----------------------------------------------------------------------------
+                nowEntrophy = self.calcEntrophy(allBacklinksNum,asAnchortextNum)
+                print(nowEntrophy)#!!
+                #맨션이라면-------------------------------------------------------------------
+                if nowEntrophy < self.MAXENTROPHY:
+                    mentions.append(candidateMention)
+                    print(candidateMention)#!!
+                    candidateConcept_AND_asAnchortextNum = sorted(candidateConcept_AND_asAnchortextNum, key=lambda x : -x[1])
+                    
+                    concepts = []
+                    for i in range(20):
+                        if candidateConcept_AND_asAnchortextNum[i][1] < 2 or len(candidateConcept_AND_asAnchortextNum) == i:
+                            break
+                        concepts.append(candidateConcept_AND_asAnchortextNum[i][0])
 
-            #----------------------------------------------------------------------------
+                    self.craw.fc.getCache(4, candidateMention, [nowEntrophy]+concepts)#save
+                    conceptsOfMentions.append(concepts)
+                #----------------------------------------------------------------------------
+            return mentions, conceptsOfMentions
 
-            
-            
-            return
+#-------------------------------------------------------------------------------------------------------------------------------------------------------
 
-        
     def getAnnotation(self, numberOfAnnotation:int):#text는 mention들의 리스트, numberOfAnnotation는 결과 단어 몇개 출력할지 정하는 변수
         crl = Crawling()
 
@@ -251,7 +273,7 @@ class Graph:
 #ans = Graph(['testing', 'cat', 'rainbow']).getAnnotation(5)
 
 timeStart = time.time()
-g = Graph(['toy'])
+g = Graph(['mouse'])
 timeEnd = time.time()
 sec = timeEnd - timeStart
 result_list = str(datetime.timedelta(seconds=sec))
