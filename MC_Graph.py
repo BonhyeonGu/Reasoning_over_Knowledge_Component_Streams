@@ -69,7 +69,8 @@ class Graph:
                 texts = self.craw.getTexts(backlink)
                 if texts != -1:
                     break
-                print("ERROR(AUTO RETRY), MC_Graph.py, THREAD_ANCHORTEXTS, getTexts, LINE:72")
+                print(datetime.datetime.now())
+                print("ERROR(AUTO RETRY), MC_Graph.py, THREAD_ANCHORTEXTS, getTexts, LINE:73, INPUT:" + backlink + '\n')
             try:
                 if cMention in texts:
                     with self.LOCK_ANCHORTEXTS:#임계구역 락, 원래 앞에 단계에 락을 형성할 수 있음을 알고있으나 불안하다.
@@ -105,10 +106,14 @@ class Graph:
         for candidateMention in candidateMentions:
             cheack = self.craw.fc.getCache(4, candidateMention)
             #이미 구했던거라면
-            if cheack != -1 and cheack[0] < self.MAXENTROPHY:
-                mentions.append(candidateMention)
-                print("already saved mention : " + candidateMention)#!!
-                conceptsOfMentions.append(cheack[1:])
+            if cheack != -1:
+                print(cheack[0])#!!
+                if float(cheack[0]) < self.MAXENTROPHY:
+                    print(candidateMention)#!!
+                    mentions.append(candidateMention)
+                    conceptsOfMentions.append(cheack[1:])
+                else:
+                    print("맨션 탈락")
             #아니라면
             else:
                 #----------------------------------------------------------------------------
@@ -116,7 +121,8 @@ class Graph:
                     candidateConcepts = list(self.craw.getLinks(candidateMention))
                     if candidateConcepts != -1:
                         break
-                    print("ERROR(AUTO RETRY), MC_Graph.py, getMentionsAndConcepts, getLinks, LINE:118")
+                    print(datetime.datetime.now())
+                    print("ERROR(AUTO RETRY), MC_Graph.py, getMentionsAndConcepts, getLinks, LINE:120, INPUT:" + candidateMention + '\n')
                 candidateConceptss = Util.splitList(candidateConcepts, 4)#x개로 쪼개짐
                 threads = []
                 threadsReturnBacklinksSize = dict()
@@ -144,17 +150,18 @@ class Graph:
                     mentions.append(candidateMention)
                     print(candidateMention)#!!
                     candidateConcept_AND_asAnchortextNum = sorted(candidateConcept_AND_asAnchortextNum, key=lambda x : -x[1])
-                    
                     concepts = []
                     for i in range(20):
                         if candidateConcept_AND_asAnchortextNum[i][1] < 2 or len(candidateConcept_AND_asAnchortextNum) == i:
                             break
                         concepts.append(candidateConcept_AND_asAnchortextNum[i][0])
 
-                    self.craw.fc.getCache(4, candidateMention, [nowEntrophy]+concepts)#save
+                    self.craw.fc.setToFile(4, candidateMention, ([str(nowEntrophy)]+concepts))#save
                     conceptsOfMentions.append(concepts)
                 #----------------------------------------------------------------------------
-            return mentions, conceptsOfMentions
+                else:
+                    print("맨션 탈락")
+        return mentions, conceptsOfMentions
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -287,7 +294,7 @@ class Graph:
 #ans = Graph(['testing', 'cat', 'rainbow']).getAnnotation(5)
 print("start\tprogram")
 timeStart = time.time()
-g = Graph(['Joseph'])
+g = Graph(['key', 'cookie'])
 timeEnd = time.time()
 sec = timeEnd - timeStart
 result_list = str(datetime.timedelta(seconds=sec))

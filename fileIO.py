@@ -69,13 +69,20 @@ class FileIO():
         if not filename in sett[1]:
             return -1
         else:
-            ret = set()
+            if ch==1 or ch==2 or ch==3:
+                ret = set()
+            if ch==4:
+                ret = []
             f = open(sett[0] + self.nameEncode(filename), 'r', encoding='UTF-8')
             lines = f.read().split('\n')
             f.close()
             size = len(lines) - 1
-            for i in range(size):
-                ret.add(lines[i])
+            if ch==1 or ch==2 or ch==3:
+                for i in range(size):
+                    ret.add(lines[i])
+            if ch==4:
+                for i in range(size):
+                    ret.append(lines[i])
             return ret
         
     #save&add-----------------------------------------------------------
