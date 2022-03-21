@@ -39,7 +39,7 @@ class Edge:
 class Graph:
     def __init__(self, candidateMention):#candidateMention: 멘션 후보
         self.mentionList = candidateMention#디버그용
-
+        print("init class Graph")
         self.craw = Crawling()
         self.LOCK_BACKLINKS = RLock()
         self.LOCK_ANCHORTEXTS = RLock()
@@ -80,6 +80,7 @@ class Graph:
 
     def THREAD_BACKLINKS(self, cMention, cConceptss_one, outs1:dict, outs2:dict):#컨셉후보들, 백링크사이즈들, 엥커텍스트가 포함된 백링크갯수들
         for cConcept in cConceptss_one:
+            print("Thread Backlinks : " + cConcept)#디버그용
             backlinks = self.craw.getBacklinks(cConcept)
             with self.LOCK_BACKLINKS:#임계구역 락
                 outs1[cConcept] = len(backlinks)
@@ -106,7 +107,7 @@ class Graph:
             #이미 구했던거라면
             if cheack != -1 and cheack[0] < self.MAXENTROPHY:
                 mentions.append(candidateMention)
-                print(candidateMention)#!!
+                print("already saved mention : " + candidateMention)#!!
                 conceptsOfMentions.append(cheack[1:])
             #아니라면
             else:
@@ -160,29 +161,23 @@ class Graph:
     def getAnnotation(self, numberOfAnnotation:int):#text는 mention들의 리스트, numberOfAnnotation는 결과 단어 몇개 출력할지 정하는 변수
         #crl = Crawling()
 
-        li = self.mentionList
+        li = self.mentions
 
         self.mentionVertex=[]#멘션 노드 저장장소
         self.mentionSets = set()#비교 연산을 위한 집합
         self.conceptVertex=[]#컨셉 노드 저장장소
 
         #각 멘션들로 그래프 만들기 시작
-        for i in li:
+        for i in range(len(li)):
             #멘션이 이미 나온 단어인지 아닌지 확인
-            if(len(self.mentionSets & set([i])) > 0):#같은 단어 이미 만들었으면 넘긴다
+            if(len(self.mentionSets & set(li[i])) > 0):#같은 단어 이미 만들었으면 넘긴다
                 continue
-            #concepts에 엔트로피 계산으로 한번 걸러낸 컨셉들을 저장, 안만들면 -1이 출력됨
-            #-----------------------
-            #컨셉 20개만 추려야함
-            concepts = self.craw.getConcepts(i)
             
-            concepts = list(concepts)[:20]#디버그용으로 임시로 쪼갬
-            #------------------------
             nowMention = Vertex(0,i)#멘션 노드 하나 만듬
             self.mentionSets.add(i)
             self.mentionVertex.append(nowMention)
 
-            for j in concepts:#하나의 멘션에 대한 컨셉들 수만큼 노드, 간선 만듬
+            for j in self.conceptsOfMentions[i]:#하나의 멘션에 대한 컨셉들 수만큼 노드, 간선 만듬
                 #이미 만든 컨셉 노드중에 같은 노드가 존재하는 지 확인해야함
                 index = self.compareConcepts(j)
                 if(index == -1):#컨셉 노드 없으면 새로만듬
@@ -212,7 +207,15 @@ class Graph:
                     edge = Edge.conceptToConcept(SR)
                     edge.dest = j;
                     edge.start = i;
+                    oppositeEdge = Edge.conceptToConcept(SR)
+                    oppositeEdge.dest = i
+                    oppositeEdge.start = j
+
+                    
                     self.conceptVertex[i].edges.append(edge)
+                    self.conceptVertex[i].pointTo.append(oppositeEdge)
+                    self.conceptVertex[j].edges.append(oppositeEdge)
+                    self.conceptVertex[j].pointTo.append(edge)
         
         #모든 노드와 간선 생성완료
 
@@ -221,7 +224,7 @@ class Graph:
         for i in self.mentionVertex:#z를 제외한 계산 완료
             i.PR0 = len(self.craw.getBacklinks(i.name))/self.craw.getPR0den(i.name)#Crawling에 만들어놓은거 그대로 사용
             sum +=i.PR0
-        z = 1/sum/len(self.mentionVertex)
+        z = 1/sum
         for i in self.mentionVertex:#z를 곱해줘서 계산 완료
             i.PR0 *= z
 
@@ -256,7 +259,7 @@ class Graph:
         SR = 0
         if sameNum == 0:#log10에 0이 들어가면 에러뜸
             return 0
-        denominator = (math.log10(N) - math.log10(min(startLen,endLen)))#분모 -> 이거 왜 복소수?
+        denominator = (math.log10(N) - math.log10(min(startLen,endLen)))
         numerator = (math.log10(max(startLen,endLen)) - math.log10(sameNum)) #분자
         if(denominator == 0):#분모가 0인 경우가 발생할 수 있음. 임시로 0으로 처리하는걸로 해놓음
             SR = 0
@@ -282,9 +285,9 @@ class Graph:
         return
 
 #ans = Graph(['testing', 'cat', 'rainbow']).getAnnotation(5)
-print("start")
+print("start\tprogram")
 timeStart = time.time()
-g = Graph(['mouse'])
+g = Graph(['Joseph'])
 timeEnd = time.time()
 sec = timeEnd - timeStart
 result_list = str(datetime.timedelta(seconds=sec))
