@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from threading import Thread
 from queue import Queue
 import time
+import datetime
 from random import uniform
 
 from util import Util
@@ -25,8 +26,9 @@ class Crawling:
                 req = requests.get('https://en.wikipedia.org/wiki/' + keyword)
                 break
             except Exception as e:
-                print("ERROR(AUTO RETRY), crawling.py, urlToSoupOnlyNormal, requests, LINE:28")
-                time.sleep(uniform(1.5, 2.0))                
+                print(datetime.datetime.now())
+                print("ERROR(AUTO RETRY), crawling.py, urlToSoupOnlyNormal, requests, LINE:28, INPUT:" + keyword + '\n')
+                time.sleep(uniform(0.5, 1.0))                
         soup = BeautifulSoup(req.text, 'lxml')
         # tag = soup.select_one('#mw-content-text')
         # if tag == None:
