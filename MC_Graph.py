@@ -1,6 +1,7 @@
 import math
 from threading import Thread, RLock
 from typing import Type
+from xml.etree.ElementTree import tostring
 
 from util import Util
 from crawling import Crawling
@@ -13,9 +14,10 @@ class Vertex:
         self.type = type#0: mention, 1:concept
         self.name = name#위키페이지 타이틀명
         self.PR0 = 0
-        self.PR = []
+        self.PR = [1,1]
         self.edges = []
         self.pointTo = []
+        self.newestPRIdx = 0
 
 class Edge:
     def __init__(self, type):
@@ -39,7 +41,7 @@ class Edge:
 class Graph:
     def __init__(self, candidateMention):#candidateMention: 멘션 후보
         self.mentionList = candidateMention#디버그용
-        print("init class Graph")
+        
         self.craw = Crawling()
         self.LOCK_BACKLINKS = RLock()
         self.LOCK_ANCHORTEXTS = RLock()
@@ -56,10 +58,14 @@ class Graph:
     def calcEntrophy(self, allBacklinksNum, asAnchortextNum):#mention A 에 대한 entrophy를 구한다
         length = len(allBacklinksNum)#길이는 같은걸로 간주한다
         sum=0
+        den = 0
+        for i in asAnchortextNum:
+            den+=i
         for i in range(length):
-            if(asAnchortextNum[i] == 0 or allBacklinksNum[i] == 0):#둘 중 하나라도 0이면 넘김
+            if(asAnchortextNum[i] == 0 or allBacklinksNum[i] == 0 or den == 0):#둘 중 하나라도 0이면 넘김
                 continue
-            temp = asAnchortextNum[i]/allBacklinksNum[i]
+            #temp = asAnchortextNum[i]/allBacklinksNum[i]
+            temp = asAnchortextNum[i]/den
             sum -= temp * math.log10(temp)
         return sum
 
@@ -81,7 +87,7 @@ class Graph:
 
     def THREAD_BACKLINKS(self, cMention, cConceptss_one, outs1:dict, outs2:dict):#컨셉후보들, 백링크사이즈들, 엥커텍스트가 포함된 백링크갯수들
         for cConcept in cConceptss_one:
-            print("Thread Backlinks : " + cConcept)#디버그용
+            #print("Thread Backlinks : " + cConcept)#디버그용
             backlinks = self.craw.getBacklinks(cConcept)
             with self.LOCK_BACKLINKS:#임계구역 락
                 outs1[cConcept] = len(backlinks)
@@ -180,8 +186,8 @@ class Graph:
             if(len(self.mentionSets & set(li[i])) > 0):#같은 단어 이미 만들었으면 넘긴다
                 continue
             
-            nowMention = Vertex(0,i)#멘션 노드 하나 만듬
-            self.mentionSets.add(i)
+            nowMention = Vertex(0,li[i])#멘션 노드 하나 만듬
+            self.mentionSets.add(li[i])
             self.mentionVertex.append(nowMention)
 
             for j in self.conceptsOfMentions[i]:#하나의 멘션에 대한 컨셉들 수만큼 노드, 간선 만듬
@@ -194,10 +200,13 @@ class Graph:
                     nowConcept = self.conceptVertex[index]
 
                 edge = Edge(0)#mention to concept 엣지 생성
-                edge.calcMtoC(self.craw.getBacklinks(i),self.craw.getBacklinks(j))#P(가중치) 계산
-                edge.dest = nowConcept#컨셉노드와 엣지 연결
+                edge.calcMtoC(self.craw.getBacklinks(li[i]),self.craw.getBacklinks(j))#P(가중치) 계산
+                #컨셉노드와 엣지 연결
+                edge.dest = nowConcept
                 edge.start = nowMention;
+
                 nowMention.edges.append(edge)#멘션노드와 엣지 연결
+                nowConcept.pointTo.append(edge)#컨셉노드에 자신을가리키는 엣지 리스트에 추가
             #하나의 멘션에대한 컨셉노드 연결 끝
         #모든 멘션에대한 노드 만들기 끝       
             
@@ -212,13 +221,12 @@ class Graph:
 
                 if(SR > 0):#SR값이 0보다커야 간선 추가함
                     edge = Edge.conceptToConcept(SR)
-                    edge.dest = j;
-                    edge.start = i;
+                    edge.dest = self.conceptVertex[j]
+                    edge.start = self.conceptVertex[i]
                     oppositeEdge = Edge.conceptToConcept(SR)
-                    oppositeEdge.dest = i
-                    oppositeEdge.start = j
+                    oppositeEdge.dest = self.conceptVertex[i]
+                    oppositeEdge.start = self.conceptVertex[j]
 
-                    
                     self.conceptVertex[i].edges.append(edge)
                     self.conceptVertex[i].pointTo.append(oppositeEdge)
                     self.conceptVertex[j].edges.append(oppositeEdge)
@@ -242,11 +250,16 @@ class Graph:
                 sum += j.SR
 
             for j in i.edges:
-                j.P = j.SR/(sum-j.SR)
+                if sum-j.SR == 0:#컨셉 노드가 적은경우 0인 경우가 발생
+                    j.P = 1#임시로 1로 지정하도록 변경
+                else:
+                    j.P = j.SR/(sum-j.SR)
 
         #PR계산
         self.calcPR(10)
-        return#출력은 리스트로 할듯
+        supportNodeList = self.calcSupportConcept()
+        
+        return supportNodeList[:numberOfAnnotation]
     def compareConcepts(self, candidateConcept:str):#노드 이미있으면 해당하는 인덱스 출력 없으면 -1
         index = 0
         for i in self.conceptVertex:
@@ -280,21 +293,65 @@ class Graph:
         allVertex = self.mentionVertex + self.conceptVertex
         r =0.1
         for i in range(repeat):
-            new = i%2
-            old = (i+1)%2
+            print("repeat num: %d" %(i+1))
+            self.newIdx = i%2
+            self.oldIdx = (i+1)%2
             for vertex in allVertex:
                 sum=0
-
+                vertex.newestPRIdx = self.newIdx
                 for edge in vertex.pointTo:
-                    sum += edge.dest.PR[old] * edge.P
-                vertex.PR[new] = r *vertex.PR0  + (1-r)*sum
-
+                    sum += edge.dest.PR[self.oldIdx] * edge.P
+                vertex.PR[self.newIdx] = r *vertex.PR0  + (1-r)*sum
+                print("name: "+ vertex.name + " PR: %lf"%( vertex.PR[self.newIdx]))
         return
+    def calcSupportConcept(self):
+        #멘션당 PR값이 가장 높은 하나의 노드를 제외하고 나머지 노드를 없앤다
+        supportNode = set()
+        for mNode in self.mentionVertex:
+            maxPR = -1
+            maxNode = -1
+            for i in range(len(mNode.edges)):
+                if maxPR < mNode.edges[i].dest.PR[self.newIdx]:
+                    maxPR = mNode.edges[i].dest.PR[self.newIdx]
+                    maxNode = i
+            #멘션노드가 아무노드와 연결되어있지 않는경우 에러 발생
+            temp = mNode.edges[maxNode]
+            mNode.edges[maxNode] = mNode.edges[0]
+            mNode.edges[0]=temp
+            if not(temp.dest in supportNode):
+                supportNode.add(temp.dest)
+            
+            '''
+            #나머지 엣지들 제거
+            for i in mNode.edges:
+                if i == mNode.edges[0]:
+                    continue
+                i.dest.pointTo.remove(i)
+                mNode.edges.remove(i)
+            #제거 완료
+
+        #컨셉노드 중 자신을 가리키는 노드가 없는경우 삭제
+        for cNode in self.conceptVertex:
+            if len(cNode.pointTo) == 0:
+                self.conceptVertex.remove(cNode)#이렇게 둘다 삭제해야 하나?
+                del cNode
+        
+            '''
+        supportNode = list(supportNode)
+        supportNode = sorted(supportNode, key = lambda node: node.PR, reverse=True)
+        return supportNode
+
 
 #ans = Graph(['testing', 'cat', 'rainbow']).getAnnotation(5)
-print("start\tprogram")
+print("start program")
 timeStart = time.time()
-g = Graph(['key', 'cookie'])
+g = Graph(['Pivotal','pivotal','Joseph'])
+result = g.getAnnotation(5)
+print("\n")
+for i in range(len(result)):
+    print("node: "+result[i].name)
+    print("PR: %lf"%(result[i].PR[g.newIdx]))
+    print("")
 timeEnd = time.time()
 sec = timeEnd - timeStart
 result_list = str(datetime.timedelta(seconds=sec))
