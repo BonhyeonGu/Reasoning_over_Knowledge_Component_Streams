@@ -300,7 +300,7 @@ class Graph:
                 sum=0
                 vertex.newestPRIdx = self.newIdx
                 for edge in vertex.pointTo:
-                    sum += edge.dest.PR[self.oldIdx] * edge.P
+                    sum += edge.start.PR[self.oldIdx] * edge.P
                 vertex.PR[self.newIdx] = r *vertex.PR0  + (1-r)*sum
                 print("name: "+ vertex.name + " PR: %lf"%( vertex.PR[self.newIdx]))
         return
