@@ -10,22 +10,37 @@ class FileIO():
         self.okListEntrophys_Contents = ['./Cache/MentionAndgetEntrophys_getContents/', set()]
         #self.okListContents = ['./Cache/MentionAndgetContents/', set()]
 
-        self.banList = set(['\\', ':', '"', '<', '>', '|'])
+        self.banList = set([':', '<', '>', '|'])
         self.QUESTION = "~Q~"
         self.SLASH = "~S~"
         self.STAR = "~Z~"
+        self.DOT = "~D~"
+
+        self.REVERS_SLASH = "~R~"
+        self.DOUBLE_DOT = "~P~"
+        self.SINGLE_DOT = "~O~"
 
     #encode/decode----------------------------------------------------
     def nameEncode(self, s:str):
         s = s.replace('?', self.QUESTION)
         s = s.replace('/', self.SLASH)
         s = s.replace('*', self.STAR)
+        s = s.replace('.', self.DOT)
+
+        s = s.replace('\\', self.REVERS_SLASH)
+        s = s.replace('\"', self.DOUBLE_DOT)
+        s = s.replace('\'', self.SINGLE_DOT)
         return s
 
     def nameDecode(self, s:str):
         s = s.replace(self.QUESTION, '?')
         s = s.replace(self.SLASH, '/')
         s = s.replace(self.STAR, '*')
+        s = s.replace(self.DOT, '.')
+
+        s = s.replace(self.REVERS_SLASH, '\\')
+        s = s.replace(self.DOUBLE_DOT, '\"')
+        s = s.replace(self.SINGLE_DOT, '\'')
         return s
     #load--------------------------------------------------------------
     #sub
