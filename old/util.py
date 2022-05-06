@@ -15,7 +15,3 @@ class Util:
                 tmp = []
         ret.append(tmp)
         return ret
-
-    def unproxy_dict(self, dict_proxy):
-        return {k: (dict(v) if isinstance(v, DictProxy) else v)
-            for k, v in dict_proxy.items()}

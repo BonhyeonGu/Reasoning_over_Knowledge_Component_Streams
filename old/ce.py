@@ -1,0 +1,1 @@
+'abcdDEF'.capitalize()

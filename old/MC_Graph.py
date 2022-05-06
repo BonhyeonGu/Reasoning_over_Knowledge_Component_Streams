@@ -72,6 +72,10 @@ class Graph:
             sum -= temp * math.log10(temp)
         return sum
 
+    def unproxy_dict(self, dict_proxy):
+        return {k: (dict(v) if isinstance(v, DictProxy) else v)
+            for k, v in dict_proxy.items()}
+
     def PROCESS_ANCHORTEXTS(self, cMention, backlinkss_one, out, LOCK_ANCHORTEXTS):#컨셉텍스트, 백링크들, 갯수누적 정수, 락
         for backlink in backlinkss_one:
             while True:
