@@ -1,9 +1,15 @@
 import os
 import pickle as pic
+from re import M
 import numpy as np
+from multiprocessing import Process, freeze_support, Manager
+
+import util
 
 class FileIO():
     def __init__(self, local = './'):
+        self.DEBUG = True
+        self.SPLIT_PROCESS = 3 # +1
 
         self.banList = set([':', '<', '>', '|'])
         self.QUESTION = "~Q~"
@@ -66,3 +72,34 @@ class FileIO():
         for inp in inps:
             ret.append(dic[inp])
         return ret
+    
+    #-------------------------------------------------------------------
+    def ankerTextToRangeSub(self, inps:list, arr:list, ret:dict):
+        for inp in inps:
+            s = 0
+            e = len(arr) - 1
+            while(True):
+                m = e / 2
+                if inp == ret[inp]:
+                    for i in range(m, s - 1, -1):
+                        if arr[i] != inp:
+                            retS = i
+                            break
+                    for i in range(m, e):
+                        if arr[i] != inp:
+                            retE = i
+                            break
+                    ret[inp] = (retS, retE)
+                    break
+                elif inps < arr[m]:
+                    e = m
+                else:
+                    s = m
+    
+    def ankerTextToRange(self, inps:list):
+        with open(self.nameAnkerText, 'rb') as f:
+            arr = pic.load(f)
+        
+                   
+
+    #-------------------------------------------------------------------
