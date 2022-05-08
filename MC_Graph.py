@@ -67,22 +67,19 @@ class Graph:
         
         return entDict
 
-    def calcEnt(self, entDict:dict):
-        n=0
-        for i in entDict:
-            n+=i
-
+    def calcEnt(self, entDict:dict, entireNum:int):
         sum=0
-        for i in entDict:
-            sum+=(i/n)*math.log2(i/n)
+        for i in entDict.items():
+            sum+=(i[1]/entireNum)*math.log2(i[1]/entireNum)
 
-        return sum
+        return -sum
 
     def getAnnotation(self, numberOfAnnotation:int):#text는 mention들의 리스트, numberOfAnnotation는 결과 단어 몇개 출력할지 정하는 변수
         self.FileIO = FileIO()
-        self.anchorTextRange = self.FileIO.ankerTextToRange(self.mentionList)
+        self.anchorTextRange = self.FileIO.ankerTextToRangeSingle(self.mentionList)
         #없는 텍스트인지 확인해봐야함
-        self.TargetID=pickle.load('Arr2.pkl')
+        with open('Arr2.pkl', 'rb') as f:
+            self.TargetID=pickle.load(f)
         
         li = self.mentionList
 
@@ -93,25 +90,32 @@ class Graph:
         for i in range(len(li)):
             if(len(self.mentionSets & set(li[i])) > 0):#같은 단어 이미 만들었으면 넘긴다
                 continue
+
+            #n = 전체 앵커텍스트 개수
+            n = self.anchorTextRange[i][1]-self.anchorTextRange[i][0]
+
             entDict = self.getDict(self.anchorTextRange[i])
-            entrophy = self.calcEnt(entDict)
+            entrophy = self.calcEnt(entDict,n)
 
             if entrophy >=self.MAXENTROPHY:
                 continue
             
             sortedList = list()
             #+딕셔너리 정렬
-            sortedList = sorted(entDict.items(), key = operator.itemgetter(1) )
+            sortedList = sorted(entDict.items(), key = operator.itemgetter(1), reverse=True )
             conceptNum = len(sortedList)
 
             if conceptNum > 20:
                 conceptNum = 20
 
-            nowMention = Vertex(li[i])
-            #n = 전체 앵커텍스트 개수
-            n = self.anchorTextRange[i][1]-self.anchorTextRange[i][1]
+            nowMention = Vertex(0,li[i])
+            
             for j in range(conceptNum):#하나의 멘션에 대한 컨셉들 수만큼 노드, 간선 만듬
-                #이미 만든 컨셉 노드중에 같은 노드가 존재하는 지 확인해야함
+                #ni >= 2 인 것만 컨셉노드 생성
+                if sortedList[j][1] < 2:
+                    break;
+
+                #이미 만든 컨셉 노드중에 같은 노드가 존재하는지 확인
                 index = self.compareConcepts(sortedList[j][0])
                 if(index == -1):#컨셉 노드 없으면 새로만듬
                     nowConcept = Vertex(1,sortedList[j][0])
