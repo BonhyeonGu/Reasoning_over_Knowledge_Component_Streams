@@ -1,6 +1,4 @@
-import os
 import pickle as pic
-from re import M
 import numpy as np
 from multiprocessing import Process, freeze_support, Manager
 
