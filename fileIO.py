@@ -126,6 +126,9 @@ class FileIO():
             s = 0
             e = len(arr)
             while(True):
+                if s == (e - 1):
+                    ret.append(-1)
+                    break
                 m = s + (e - s) // 2
                 if inp == arr[m]:
                     for i in range(m, s - 1, -1):
