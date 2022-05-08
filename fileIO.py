@@ -4,7 +4,7 @@ from re import M
 import numpy as np
 from multiprocessing import Process, freeze_support, Manager
 
-import util
+from util import Util
 
 class FileIO():
     def __init__(self, local = './'):
@@ -26,6 +26,8 @@ class FileIO():
         self.nameAnkerTargetID = local + 'Arr2.pkl'
         self.nameNowPageID = local +'Arr3.pkl'
         self.nameBack = local + 'backlinks/'
+
+        self.m = Manager()
 
     #encode/decode----------------------------------------------------
     def nameEncode(self, s:str):
@@ -77,7 +79,7 @@ class FileIO():
     def ankerTextToRangeSub(self, inps:list, arr:list, ret:dict):
         for inp in inps:
             s = 0
-            e = len(arr) - 1
+            e = len(arr)
             while(True):
                 m = e / 2
                 if inp == ret[inp]:
@@ -99,7 +101,20 @@ class FileIO():
     def ankerTextToRange(self, inps:list):
         with open(self.nameAnkerText, 'rb') as f:
             arr = pic.load(f)
+        inpss = Util.splitList(inps, self.SPLIT_PROCESS)
+        pros = []
+        ret = self.m.dict()
+        for inps in inpss:
+            pro = Process(target = self.ankerTextToRangeSub, args=(inps, arr, ret, ))
+            pro.daemon = True
+            pro.start()
+            pros.append(pro)
         
-                   
+        del(inpss)
+        del(inps)
+
+        for pro in pros:
+            pro.join()
+        return ret                   
 
     #-------------------------------------------------------------------
