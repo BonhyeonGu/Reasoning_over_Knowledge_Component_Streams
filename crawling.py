@@ -1,20 +1,10 @@
 import requests
 from bs4 import BeautifulSoup
-from threading import Thread
-from queue import Queue
 import time
-import datetime
 from random import uniform
-
-from util import Util
-from fileIO import FileIO
-
-from multiprocessing import Process, freeze_support, Pool
-from functools import partial
 
 class Crawling:
     def __init__(self):
-        self.fc = FileIO()
         #나중에는 엥커와 백링크, 엔트로피와 콘셉트로 각각 따로 메모리에 셋을 할까
         self.fc.loadSets()
 

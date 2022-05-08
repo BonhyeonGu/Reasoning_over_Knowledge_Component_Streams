@@ -7,6 +7,7 @@ from xml.etree.ElementTree import tostring
 
 from util import Util
 from crawling import Crawling
+from fileIO import FileIO
 
 from random import uniform
 import time 
