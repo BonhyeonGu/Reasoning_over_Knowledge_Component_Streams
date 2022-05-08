@@ -4,10 +4,6 @@ import time
 from random import uniform
 
 class Crawling:
-    def __init__(self):
-        #나중에는 엥커와 백링크, 엔트로피와 콘셉트로 각각 따로 메모리에 셋을 할까
-        self.fc.loadSets()
-
     def urlToSoup(self, url):
         try:
             req = requests.get(url)
