@@ -116,4 +116,31 @@ class FileIO():
             pro.join()
         return ret
 
+    def ankerTextToRangeSingle(self, inps:list):
+        with open(self.nameAnkerText, 'rb') as f:
+            arr = pic.load(f)
+
+        ret = []
+        for inp in inps:
+            inp = inp.encode('utf-8')
+            s = 0
+            e = len(arr)
+            while(True):
+                m = s + (e - s) // 2
+                if inp == arr[m]:
+                    for i in range(m, s - 1, -1):
+                        if arr[i] != inp:
+                            retS = i
+                            break
+                    for i in range(m, e):
+                        if arr[i] != inp:
+                            retE = i
+                            break
+                    ret.append((retS, retE))
+                    break
+                elif inp < arr[m]:
+                    e = m
+                else:
+                    s = m
+        return ret
     #-------------------------------------------------------------------
