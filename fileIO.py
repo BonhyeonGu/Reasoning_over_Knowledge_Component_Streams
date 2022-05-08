@@ -60,7 +60,7 @@ class FileIO():
     #!!!
     def getIDToTitle(self, inps:list):
         ret = []
-        arr = np.load(self.nameIDToTitle)
+        arr = np.load(self.nameIDToTitle, allow_pickle=True)
         for inp in inps:
             ret.append(arr[inp])
         return ret
