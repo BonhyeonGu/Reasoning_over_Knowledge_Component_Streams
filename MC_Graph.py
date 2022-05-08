@@ -1,4 +1,6 @@
 #from ast import operator
+from base64 import decode
+import cProfile
 import operator
 import math
 import pickle
@@ -8,16 +10,37 @@ from fileIO import FileIO
 
 import time 
 import datetime
+newestPRIdx = 0
+newIdx = 0
+oldIdx = 1
 
+
+def getDict(anchorRange:list, TargetID:list):
+    entDict = dict()
+    for i in range(anchorRange[0], anchorRange[1]):
+        try:
+            entDict[TargetID[i]]+=1
+        except KeyError:
+            entDict[TargetID[i]]=1
+        
+    return entDict
+
+def calcEnt(entDict:dict, entireNum:int):
+    sum=0
+    for i in entDict.items():
+        sum+=(i[1]/entireNum)*math.log2(i[1]/entireNum)
+
+    return -sum
+
+#-----------------------------------------------------------------------------------------------------------------------------------------------------
 class Vertex:
     def __init__(self, type, name):
         self.type = type#0: mention, 1:concept
-        self.name = name#위키페이지 타이틀명
+        self.name = name#위키페이지 타이틀명or ID
         self.PR0 = 0
         self.PR = [0.0,0.0]
         self.edges = list()
         self.pointTo = list()
-        self.newestPRIdx = 0
 
 class Edge:
     def __init__(self, type):
@@ -46,47 +69,32 @@ class Graph:
         #---------------------------------------------------
         
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
-    def getDict(self, anchorRange:list, TargetID:list):
-        entDict = dict()
-        for i in range(anchorRange[0], anchorRange[1]):
-            try:
-                entDict[TargetID[i]]+=1
-            except KeyError:
-                entDict[TargetID[i]]=1
-        
-        return entDict
 
-    def calcEnt(self, entDict:dict, entireNum:int):
-        sum=0
-        for i in entDict.items():
-            sum+=(i[1]/entireNum)*math.log2(i[1]/entireNum)
-
-        return -sum
-
-    def getAnnotation(self, numberOfAnnotation:int):#text는 mention들의 리스트, numberOfAnnotation는 결과 단어 몇개 출력할지 정하는 변수
+    def makeAllNode(self):
         self.anchorTextRange = self.FileIO.ankerTextToRangeSingle(self.mentionList)
         #없는 텍스트인지 확인해봐야함
+
         TargetID=list()
         TargetID = self.FileIO.callListAnkerTargetID()
         li = self.mentionList
 
         self.mentionVertex=[]#멘션 노드 저장장소
-        self.mentionSets = set()#비교 연산을 위한 집합
         self.conceptVertex=[]#컨셉 노드 저장장소
 
+        mentionSets = set()#비교 연산을 위한 집합
         sortedList = list()
         for i in range(len(li)):
             #앵커텍스트로서 존재하지 않는 단어는 제외
             if self.anchorTextRange[i] == -1:
                 continue
-            if(len(self.mentionSets & set(li[i])) > 0):#같은 단어 이미 만들었으면 넘긴다
+            if(len(mentionSets & set(li[i])) > 0):#같은 단어 이미 만들었으면 넘긴다
                 continue
 
             #n = 전체 앵커텍스트 개수
             n = self.anchorTextRange[i][1]-self.anchorTextRange[i][0]
 
-            entDict = self.getDict(self.anchorTextRange[i],TargetID)
-            entrophy = self.calcEnt(entDict,n)
+            entDict = getDict(self.anchorTextRange[i],TargetID)
+            entrophy = calcEnt(entDict,n)
 
             #엔트로피 통과하는지 확인
             if entrophy >=self.MAXENTROPHY:
@@ -104,7 +112,7 @@ class Graph:
             #멘션노드 생성
             nowMention = Vertex(0,li[i])
             self.mentionVertex.append(nowMention)
-            self.mentionSets.add(nowMention.name)
+            mentionSets.add(nowMention.name)
 
             for j in range(conceptNum):#하나의 멘션에 대한 컨셉들 수만큼 노드, 간선 만듬
                 #ni >= 2 인 것만 컨셉노드 생성
@@ -132,10 +140,10 @@ class Graph:
             sortedList.clear()
             entDict.clear()
         #모든 멘션에대한 노드 만들기 끝 
-
+        del mentionSets
         del TargetID
 
-        #컨셉노드끼리의 간선 이어야함
+    def makeEdgeCtoC(self):
         for i in range(0,len(self.conceptVertex)):#모든 간선을 돌리면 a노드가 b노드를 가리키고 b노드도 a노드를 가리키는 경우 발생, 
             for j in range(i,len(self.conceptVertex)):#range안에 0을 i로 바꾸면 위에서 말한 이중간선은 없어질듯
                 if(i == j):#자기자신을 가리키는 간선 안생김
@@ -156,10 +164,8 @@ class Graph:
                     self.conceptVertex[i].pointTo.append(oppositeEdge)
                     self.conceptVertex[j].edges.append(oppositeEdge)
                     self.conceptVertex[j].pointTo.append(edge)
-        
-        #모든 노드와 간선 생성완료
 
-        #PR0 계산
+    def calcPR0(self):
         sum = 0
 
         PageID = self.FileIO.callListNowPageID()
@@ -172,7 +178,7 @@ class Graph:
         for i in range(len(self.anchorTextRange)):#z를 제외한 계산 완료
             #u를 앵커텍스트로 가지는 페이지 수 구해서 분자로 넣어주기
 
-            pageDict = self.getDict(self.anchorTextRange[i], PageID)
+            pageDict = getDict(self.anchorTextRange[i], PageID)
             
             self.mentionVertex[i].PR0 = len(pageDict)/self.craw.getPR0den(self.mentionVertex[i].name)#Crawling에 만들어놓은거 그대로 사용
             sum +=self.mentionVertex[i].PR0
@@ -181,7 +187,8 @@ class Graph:
             i.PR0 *= z
 
         del PageID
-        #P(c,c')계산
+
+    def calcPosibilityCtoC(self):
         for i in self.conceptVertex:
             sum = 0
             for j in i.edges:
@@ -193,15 +200,6 @@ class Graph:
                 else:
                     j.P = j.SR/(sum)
 
-        #PR계산
-        l = len(self.conceptVertex)
-        for i in self.conceptVertex:
-            i.PR = [1/l,1/l]
-        self.calcPR(50)
-        supportNodeList = self.calcSupportConcept()
-        
-        return self.FileIO.getIDToTitle(supportNodeList[:numberOfAnnotation])
-        #return supportNodeList[:numberOfAnnotation]
     def compareConcepts(self, candidateConcept:str):#노드 이미있으면 해당하는 인덱스 출력 없으면 -1
         index = 0
         for i in self.conceptVertex:
@@ -209,6 +207,7 @@ class Graph:
                 return index
             index+=1
         return -1
+
     def calcSR(self, start_set:set, end_set:set, N):
             
         sameNum = len(start_set & end_set)
@@ -235,23 +234,24 @@ class Graph:
         allVertex = self.mentionVertex + self.conceptVertex
         r =0.1
         for i in range(repeat):
-            print("repeat num: %d" %(i+1))
-            self.newIdx = i%2
-            self.oldIdx = (i+1)%2
+            #print("repeat num: %d" %(i+1))
+            newIdx = i%2
+            oldIdx = (i+1)%2
             for vertex in allVertex:
                 sum=0
-                vertex.newestPRIdx = self.newIdx
+                newestPRIdx = newIdx
                 for edge in vertex.pointTo:
-                    sum += edge.start.PR[self.oldIdx] * edge.P
-                vertex.PR[self.newIdx] = r *vertex.PR0  + (1-r)*sum
-                print("name: "+ vertex.name + " PR: %lf"%( vertex.PR[self.newIdx]))
+                    sum += edge.start.PR[oldIdx] * edge.P
+                vertex.PR[newIdx] = r *vertex.PR0  + (1-r)*sum
+                #print("name: "+ vertex.name + " PR: %lf"%( vertex.PR[newIdx]))
             
         allPR = 0.0
         for j in allVertex:
-            allPR +=j.PR[j.newestPRIdx]
+            allPR +=j.PR[newestPRIdx]
 
         print("allPR: %lf"%(allPR))
         return
+
     def calcSupportConcept(self):
         #멘션당 PR값이 가장 높은 하나의 노드를 제외하고 나머지 노드를 없앤다
         supportNode = set()
@@ -259,8 +259,8 @@ class Graph:
             maxPR = -1
             maxNode = -1
             for i in range(len(mNode.edges)):
-                if maxPR < mNode.edges[i].dest.PR[self.newIdx]:
-                    maxPR = mNode.edges[i].dest.PR[self.newIdx]
+                if maxPR < mNode.edges[i].dest.PR[newIdx]:
+                    maxPR = mNode.edges[i].dest.PR[newIdx]
                     maxNode = i
             #멘션노드가 아무노드와 연결되어있지 않는경우 에러 발생
 
@@ -272,37 +272,103 @@ class Graph:
             if not(temp.dest in supportNode):
                 supportNode.add(temp.dest)
             
-            '''
-            #나머지 엣지들 제거
-            for i in mNode.edges:
-                if i == mNode.edges[0]:
-                    continue
-                i.dest.pointTo.remove(i)
-                mNode.edges.remove(i)
-            #제거 완료
-
-        #컨셉노드 중 자신을 가리키는 노드가 없는경우 삭제
-        for cNode in self.conceptVertex:
-            if len(cNode.pointTo) == 0:
-                self.conceptVertex.remove(cNode)#이렇게 둘다 삭제해야 하나?
-                del cNode
-        
-            '''
         supportNode = list(supportNode)
         supportNode = sorted(supportNode, key = lambda node: node.PR, reverse=True)
         return supportNode
+
+    def getAnnotation(self, numberOfAnnotation:int):#text는 mention들의 리스트, numberOfAnnotation는 결과 단어 몇개 출력할지 정하는 변수
+        #그래프 노드, 멘션노드에서 컨셉노드로 향하는 엣지 생성
+        print("makeAllNode")
+        timeStart = time.time()
+        self.makeAllNode()
+        timeEnd = time.time()
+        sec = timeEnd - timeStart
+        result_list = str(datetime.timedelta(seconds=sec))
+        print(result_list)
+        print("")
+
+        #컨셉노드끼리의 간선 이어야함
+        print("makeEdgeCtoC")
+        timeStart = time.time()
+        self.makeEdgeCtoC()
+        timeEnd = time.time()
+        sec = timeEnd - timeStart
+        result_list = str(datetime.timedelta(seconds=sec))
+        print(result_list)
+        print("")
+
+        #PR0 계산
+        print("calcPR0")
+        timeStart = time.time()
+        self.calcPR0()
+        timeEnd = time.time()
+        sec = timeEnd - timeStart
+        result_list = str(datetime.timedelta(seconds=sec))
+        print(result_list)
+        print("")
+
+        #P(c,c')계산
+        print("calcPosibilityCtoC")
+        timeStart = time.time()
+        self.calcPosibilityCtoC()
+        timeEnd = time.time()
+        sec = timeEnd - timeStart
+        result_list = str(datetime.timedelta(seconds=sec))
+        print(result_list)
+        print("")
+
+        #PR계산
+        print("calcPR")
+        timeStart = time.time()
+        #초기 PR값 = 1/컨셉노드 
+        l = len(self.conceptVertex)
+        for i in self.conceptVertex:
+            i.PR = [1/l,1/l]
+        self.calcPR(50)
+        timeEnd = time.time()
+        sec = timeEnd - timeStart
+        result_list = str(datetime.timedelta(seconds=sec))
+        print(result_list)
+        print("")
+
+        #멘션노드당 하나씩 최고 PR값 높은 컨셉노드 구하기
+        print("calcSupportConcept")
+        timeStart = time.time()
+        supportNodeList = self.calcSupportConcept()
+        timeEnd = time.time()
+        sec = timeEnd - timeStart
+        result_list = str(datetime.timedelta(seconds=sec))
+        print(result_list)
+        print("")
+
+        #ID를 타이틀로 변환시킬 준비
+        print("getIDToTitle")
+        timeStart = time.time()
+        IDList=list()
+        for i in supportNodeList[:numberOfAnnotation]:
+            IDList.append(int(i.name))
+        
+        #ID를 타이틀로 변환
+        IDList = self.FileIO.getIDToTitle(IDList)
+        for i in range(len(IDList)):
+            supportNodeList[i].name = IDList[i].decode('utf-8')
+        timeEnd = time.time()
+        sec = timeEnd - timeStart
+        result_list = str(datetime.timedelta(seconds=sec))
+        print(result_list)
+        print("")
+        return supportNodeList[:numberOfAnnotation]
 
 if __name__ == '__main__':
     print("start program")
     timeStart = time.time()
     g = Graph(['Pivotal','Moment','Tesla', 'Unveils', 'First', 'Mass-Market','Sedan','Elon_Musk',"Tesla", 'chief', 'executive','cars','employees','owners','electric-car','marker','challenge','demand'])
     #g = Graph(['cat', 'dog'])
-    result = g.getAnnotation(5)
+    result=g.getAnnotation(5)
     print("\n")
     for i in range(len(result)):
         print("node: "+result[i].name)
-        print("PR: %lf"%(result[i].PR[g.newIdx]))
-        print("")
+        print("PR: %lf"%(result[i].PR[newestPRIdx]))
     timeEnd = time.time()
     sec = timeEnd - timeStart
     result_list = str(datetime.timedelta(seconds=sec))
