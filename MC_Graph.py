@@ -2,17 +2,10 @@
 import operator
 import math
 import pickle
-from threading import Thread, RLock
-from multiprocessing import Process, Lock, freeze_support, Manager
-from multiprocessing.managers import DictProxy
-from typing import Type
-from xml.etree.ElementTree import tostring
 
-from util import Util
 from crawling import Crawling
 from fileIO import FileIO
 
-from random import uniform
 import time 
 import datetime
 
@@ -46,16 +39,12 @@ class Edge:
 class Graph:
     def __init__(self, candidateMention:list):#candidateMention: 멘션 후보
         self.mentionList = candidateMention#디버그용
-        
-        self.craw = Crawling()
-        self.LOCK_BACKLINKS = Lock()
-        self.LOCK_HAVECOUNT = Lock()
-        #---------------------------------------------------
         self.MAXENTROPHY = 1000.0
         #---------------------------------------------------
-
-#-------------------------------------------------------------------------------------------------------------------------------------------------------
- 
+        self.craw = Crawling()
+        self.FileIO = FileIO()#경로 넣을것!
+        #---------------------------------------------------
+        
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
     def getDict(self, anchorRange:list):
         entDict = dict()
@@ -75,12 +64,9 @@ class Graph:
         return -sum
 
     def getAnnotation(self, numberOfAnnotation:int):#text는 mention들의 리스트, numberOfAnnotation는 결과 단어 몇개 출력할지 정하는 변수
-        self.FileIO = FileIO()
         self.anchorTextRange = self.FileIO.ankerTextToRangeSingle(self.mentionList)
         #없는 텍스트인지 확인해봐야함
-        with open('Arr2.pkl', 'rb') as f:
-            self.TargetID=pickle.load(f)
-        
+        self.TargetID = self.FileIO.callListAnkerTargetID()
         li = self.mentionList
 
         self.mentionVertex=[]#멘션 노드 저장장소
@@ -268,7 +254,6 @@ class Graph:
         return supportNode
 
 if __name__ == '__main__':
-    freeze_support()
     #ans = Graph(['testing', 'cat', 'rainbow']).getAnnotation(5)
     print("start program")
     timeStart = time.time()

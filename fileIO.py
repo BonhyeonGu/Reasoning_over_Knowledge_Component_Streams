@@ -144,3 +144,15 @@ class FileIO():
                     s = m
         return ret
     #-------------------------------------------------------------------
+
+    def callListAnkerTargetID(self):
+        with open(self.nameAnkerTargetID, 'rb') as f:
+            ret = pic.load(f)
+        return ret
+
+    def callListNowPageID(self):
+        with open(self.nameNowPageID, 'rb') as f:
+            ret = pic.load(f)
+        return ret
+    
+    #-------------------------------------------------------------------
