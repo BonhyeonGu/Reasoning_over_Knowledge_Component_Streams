@@ -1,4 +1,7 @@
+#from ast import operator
+import operator
 import math
+import pickle
 from threading import Thread, RLock
 from multiprocessing import Process, Lock, freeze_support, Manager
 from multiprocessing.managers import DictProxy
@@ -19,8 +22,8 @@ class Vertex:
         self.name = name#위키페이지 타이틀명
         self.PR0 = 0
         self.PR = [1,1]
-        self.edges = []
-        self.pointTo = []
+        self.edges = list()
+        self.pointTo = list()
         self.newestPRIdx = 0
 
 class Edge:
@@ -37,13 +40,11 @@ class Edge:
         return temp
 
         
-    def calcMtoC(self,mentionBacklinkSet:set,conceptBackinkSet:set):
-        a=len(mentionBacklinkSet)
-        c=len(mentionBacklinkSet & conceptBackinkSet)
-        self.P = c/a
+    def calcMtoC(self,entireAnchorNum:int,sameTargetPage:int):
+        self.P = sameTargetPage/entireAnchorNum
 
 class Graph:
-    def __init__(self, candidateMention):#candidateMention: 멘션 후보
+    def __init__(self, candidateMention:list):#candidateMention: 멘션 후보
         self.mentionList = candidateMention#디버그용
         
         self.craw = Crawling()
@@ -53,174 +54,73 @@ class Graph:
         self.MAXENTROPHY = 1000.0
         #---------------------------------------------------
 
-        #candidateMention가 리스트?
-        #인정된 맨션들 (1차원 리스트)
-        self.mentions, self.conceptsOfMentions = self.getMentionsAndConcepts(candidateMention)
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
-    #allBacklinksNum = A로 인해 발생한 concept후보들 각각의 전체 백링크 수
-    #asAnchortextNum = 위의 백링크들 중에서 앵커텍스트가 A인 링크개수
-    def calcEntrophy(self, allBacklinksNum, asAnchortextNum):#mention A 에 대한 entrophy를 구한다
-        length = len(allBacklinksNum)#길이는 같은걸로 간주한다
+ 
+#-------------------------------------------------------------------------------------------------------------------------------------------------------
+    def getDict(self, anchorRange:list):
+        entDict = dict()
+        for i in range(anchorRange[0], anchorRange[1]):
+            try:
+                entDict[self.TargetID[i]]+=1
+            except KeyError:
+                entDict[self.TargetID[i]]=1
+        
+        return entDict
+
+    def calcEnt(self, entDict:dict):
+        n=0
+        for i in entDict:
+            n+=i
+
         sum=0
-        den = 0
-        for i in asAnchortextNum:
-            den+=i
-        for i in range(length):
-            if(asAnchortextNum[i] == 0 or allBacklinksNum[i] == 0 or den == 0):#둘 중 하나라도 0이면 넘김
-                continue
-            #temp = asAnchortextNum[i]/allBacklinksNum[i]
-            temp = asAnchortextNum[i]/den
-            sum -= temp * math.log10(temp)
+        for i in entDict:
+            sum+=(i/n)*math.log2(i/n)
+
         return sum
 
-    def PROCESS_ANCHORTEXTS(self, cMention, backlinkss_one, out, LOCK_ANCHORTEXTS):#컨셉텍스트, 백링크들, 갯수누적 정수, 락
-        for backlink in backlinkss_one:
-            while True:
-                texts = self.craw.getTexts(backlink)
-                if texts != -1:
-                    break
-                print(datetime.datetime.now())
-                print("ERROR(AUTO RETRY), MC_Graph.py, THREAD_ANCHORTEXTS, getTexts, LINE:79, INPUT:" + backlink + '\n')
-                time.sleep(uniform(2.0, 10.5))
-            try:
-                if cMention in texts:
-                    LOCK_ANCHORTEXTS.acquire()
-                    out[0] += 1
-                    LOCK_ANCHORTEXTS.release()
-            except TypeError as e:
-                print(e)
-        return
-
-    def PROCESS_BACKLINKS(self, cMention, cConceptss_one, outs1:dict, outs2:dict):#멘션 메세지, 컨셉후보들, 백링크사이즈들, 엥커텍스트가 포함된 백링크갯수들
-        for cConcept in cConceptss_one:
-            #print("Thread Backlinks : " + cConcept)#디버그용
-            backlinks = self.craw.getBacklinks(cConcept)
-            self.LOCK_BACKLINKS.acquire()#임계구역 락
-            outs1[cConcept] = len(backlinks)
-            self.LOCK_BACKLINKS.release()
-            #이후엔 또 작업이 쪼개짐    
-            backlinkss = Util.splitList(backlinks, 5)
-            threads = []
-            havecount = Manager().list()#얕은복사를 위함
-            havecount.append(0)
-            LOCK_ANCHORTEXTS = Lock()
-            for backlinkss_one in backlinkss:
-                th = Process(target=self.PROCESS_ANCHORTEXTS, args=(cMention, backlinkss_one, havecount, LOCK_ANCHORTEXTS))
-                th.daemon = True
-                th.start()
-                threads.append(th)
-            for th in threads:
-                th.join()
-            self.LOCK_HAVECOUNT.acquire()#임계구역 락#임계구역 락, 개별로 만드는게 좋겠지만 역시 불안하다.
-            outs2[cConcept] = havecount[0]
-            self.LOCK_HAVECOUNT.release()
-        return
-
-    def getMentionsAndConcepts(self, candidateMentions):
-        mentions = []
-        conceptsOfMentions = []
-        for candidateMention in candidateMentions:
-            cheack = self.craw.fc.getCache(4, candidateMention)
-            #이미 구했던거라면
-            if cheack != -1:
-                print(cheack[0])#!!
-                if float(cheack[0]) < self.MAXENTROPHY:
-                    print(candidateMention)#!!
-                    mentions.append(candidateMention)
-                    conceptsOfMentions.append(cheack[1:])
-                else:
-                    print("맨션 탈락")
-            #아니라면
-            else:
-                #----------------------------------------------------------------------------
-                while True:
-                    candidateConcepts = list(self.craw.getLinks(candidateMention))
-                    # t_candidateConcepts = []
-                    # for candidateConcept in candidateConcepts:
-                    #     texts = self.craw.getTexts(candidateConcept)
-                    #     for text in texts:
-                    #         if candidateMention in text:
-                    #             t_candidateConcepts.append(candidateConcept)
-                    #             break
-                    if candidateConcepts != -1:
-                        break
-                    print(datetime.datetime.now())
-                    print("ERROR(AUTO RETRY), MC_Graph.py, getMentionsAndConcepts, getLinks, LINE:120, INPUT:" + candidateMention + '\n')
-                    time.sleep(time.uniform(0.5, 1.0))
-                candidateConceptss = Util.splitList(candidateConcepts, 4)#x개로 쪼개짐
-                threads = []
-                threadsReturnBacklinksSize = Manager().dict()
-                threadsReturnBacklinksHaveText = Manager().dict()
-                for candidateConceptss_one in candidateConceptss:
-                    th = Process(target=self.PROCESS_BACKLINKS, args=(candidateMention, candidateConceptss_one, threadsReturnBacklinksSize, threadsReturnBacklinksHaveText, ))
-                    #th.daemon = True
-                    th.start()
-                    threads.append(th)
-                for th in threads:
-                    th.join()
-                threadsReturnBacklinksSize = self.unproxy_dict(threadsReturnBacklinksSize)
-                threadsReturnBacklinksHaveText = self.unproxy_dict(threadsReturnBacklinksHaveText)
-                #----------------------------------------------------------------------------
-                allBacklinksNum = []
-                asAnchortextNum = []
-                candidateConcept_AND_asAnchortextNum = []
-                for candidateConcept in candidateConcepts:
-                    allBacklinksNum.append(threadsReturnBacklinksSize[candidateConcept])
-                    asAnchortextNum.append(threadsReturnBacklinksHaveText[candidateConcept])
-                    candidateConcept_AND_asAnchortextNum.append((candidateConcept, threadsReturnBacklinksHaveText[candidateConcept]))
-                #----------------------------------------------------------------------------
-                nowEntrophy = self.calcEntrophy(allBacklinksNum,asAnchortextNum)
-                print(nowEntrophy)#!!
-                #맨션이라면-------------------------------------------------------------------
-                if nowEntrophy < self.MAXENTROPHY:
-                    mentions.append(candidateMention)
-                    print(candidateMention)#!!
-                    candidateConcept_AND_asAnchortextNum = sorted(candidateConcept_AND_asAnchortextNum, key=lambda x : -x[1])
-                    concepts = []
-                    for i in range(20):
-                        if candidateConcept_AND_asAnchortextNum[i][1] < 2 or len(candidateConcept_AND_asAnchortextNum) == i:
-                            break
-                        concepts.append(candidateConcept_AND_asAnchortextNum[i][0])
-
-                    self.craw.fc.setToFile(4, candidateMention, ([str(nowEntrophy)]+concepts))#save
-                    conceptsOfMentions.append(concepts)
-                #----------------------------------------------------------------------------
-                else:
-                    print("맨션 탈락")
-        return mentions, conceptsOfMentions
-
-#-------------------------------------------------------------------------------------------------------------------------------------------------------
-
     def getAnnotation(self, numberOfAnnotation:int):#text는 mention들의 리스트, numberOfAnnotation는 결과 단어 몇개 출력할지 정하는 변수
-        #crl = Crawling()
-
-        li = self.mentions
+        self.FileIO = FileIO()
+        self.anchorTextRange = self.FileIO.ankerTextToRange(self.mentionList)
+        #없는 텍스트인지 확인해봐야함
+        self.TargetID=pickle.load('Arr2.pkl')
+        
+        li = self.mentionList
 
         self.mentionVertex=[]#멘션 노드 저장장소
         self.mentionSets = set()#비교 연산을 위한 집합
         self.conceptVertex=[]#컨셉 노드 저장장소
 
-        #각 멘션들로 그래프 만들기 시작
         for i in range(len(li)):
-            #멘션이 이미 나온 단어인지 아닌지 확인
             if(len(self.mentionSets & set(li[i])) > 0):#같은 단어 이미 만들었으면 넘긴다
                 continue
-            
-            nowMention = Vertex(0,li[i])#멘션 노드 하나 만듬
-            self.mentionSets.add(li[i])
-            self.mentionVertex.append(nowMention)
+            entDict = self.getDict(self.anchorTextRange[i])
+            entrophy = self.calcEnt(entDict)
 
-            for j in self.conceptsOfMentions[i]:#하나의 멘션에 대한 컨셉들 수만큼 노드, 간선 만듬
+            if entrophy >=self.MAXENTROPHY:
+                continue
+            
+            sortedList = list()
+            #+딕셔너리 정렬
+            sortedList = sorted(entDict.items(), key = operator.itemgetter(1) )
+            conceptNum = len(sortedList)
+
+            if conceptNum > 20:
+                conceptNum = 20
+
+            nowMention = Vertex(li[i])
+            #n = 전체 앵커텍스트 개수
+            n = self.anchorTextRange[i][1]-self.anchorTextRange[i][1]
+            for j in range(conceptNum):#하나의 멘션에 대한 컨셉들 수만큼 노드, 간선 만듬
                 #이미 만든 컨셉 노드중에 같은 노드가 존재하는 지 확인해야함
-                index = self.compareConcepts(j)
+                index = self.compareConcepts(sortedList[j][0])
                 if(index == -1):#컨셉 노드 없으면 새로만듬
-                    nowConcept = Vertex(1,j)
+                    nowConcept = Vertex(1,sortedList[j][0])
                     self.conceptVertex.append(nowConcept)
                 else:
                     nowConcept = self.conceptVertex[index]
 
                 edge = Edge(0)#mention to concept 엣지 생성
-                edge.calcMtoC(self.craw.getBacklinks(li[i]),self.craw.getBacklinks(j))#P(가중치) 계산
+                edge.calcMtoC(n,sortedList[j][1])#P(가중치) 계산
                 #컨셉노드와 엣지 연결
                 edge.dest = nowConcept
                 edge.start = nowMention
@@ -228,8 +128,8 @@ class Graph:
                 nowMention.edges.append(edge)#멘션노드와 엣지 연결
                 nowConcept.pointTo.append(edge)#컨셉노드에 자신을가리키는 엣지 리스트에 추가
             #하나의 멘션에대한 컨셉노드 연결 끝
-        #모든 멘션에대한 노드 만들기 끝       
-            
+        #모든 멘션에대한 노드 만들기 끝 
+
         #컨셉노드끼리의 간선 이어야함
         for i in range(0,len(self.conceptVertex)):#모든 간선을 돌리면 a노드가 b노드를 가리키고 b노드도 a노드를 가리키는 경우 발생, 
             for j in range(i,len(self.conceptVertex)):#range안에 0을 i로 바꾸면 위에서 말한 이중간선은 없어질듯
@@ -237,7 +137,7 @@ class Graph:
                     continue
                 #i 에서 j로 가는 간선만듬
                 N = len(self.conceptVertex)
-                SR = self.calcSR(self.craw.getBacklinks(self.conceptVertex[i].name),self.craw.getBacklinks(self.conceptVertex[j].name),N)
+                SR = self.calcSR(self.FileIO.getBacklinks(self.conceptVertex[j].name),self.FileIO.getBacklinks(self.conceptVertex[j].name),N)
 
                 if(SR > 0):#SR값이 0보다커야 간선 추가함
                     edge = Edge.conceptToConcept(SR)
@@ -257,7 +157,9 @@ class Graph:
         #PR0 계산
         sum = 0
         for i in self.mentionVertex:#z를 제외한 계산 완료
-            i.PR0 = len(self.craw.getBacklinks(i.name))/self.craw.getPR0den(i.name)#Crawling에 만들어놓은거 그대로 사용
+            #u를 앵커텍스트로 가지는 페이지 수 구해서 분자로 넣어주기
+
+            i.PR0 = len(10)/self.craw.getPR0den(i.name)#Crawling에 만들어놓은거 그대로 사용
             sum +=i.PR0
         z = 1/sum
         for i in self.mentionVertex:#z를 곱해줘서 계산 완료
@@ -297,10 +199,10 @@ class Graph:
 
         #수식 계산
         SR = 0
-        if sameNum == 0:#log10에 0이 들어가면 에러뜸
+        if sameNum == 0:#log2에 0이 들어가면 에러뜸
             return 0
-        denominator = (math.log10(N) - math.log10(min(startLen,endLen)))
-        numerator = (math.log10(max(startLen,endLen)) - math.log10(sameNum)) #분자
+        denominator = (math.log2(N) - math.log2(min(startLen,endLen)))
+        numerator = (math.log2(max(startLen,endLen)) - math.log2(sameNum)) #분자
         if(denominator == 0):#분모가 0인 경우가 발생할 수 있음. 임시로 0으로 처리하는걸로 해놓음
             SR = 0
         else:
