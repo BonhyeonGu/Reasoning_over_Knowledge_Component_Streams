@@ -8,12 +8,11 @@ class WikificationTest:
         self.inputForward = text
         self.preProcess()
         g = Graph(self.inputForward)
-        g.getAnnotation(5)
-        result = g.getGlobalIdx()
+        result = g.getAnnotation(5)
         print("\n")
         for i in range(len(result)):
             print("node: "+result[i].name)
-            print("PR: %lf"%(result[i].PR[g.newIdx]))
+            print("PR: %lf"%(result[i].PR[g.IDX]))
             print("")       
         
     def preProcess(self):

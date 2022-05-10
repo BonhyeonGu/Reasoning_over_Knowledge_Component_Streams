@@ -10,10 +10,6 @@ from fileIO import FileIO
 
 import time 
 import datetime
-newestPRIdx = 0
-newIdx = 0
-oldIdx = 1
-
 
 def getDict(anchorRange:list, TargetID:list):
     entDict = dict()
@@ -63,14 +59,13 @@ class Graph:
     def __init__(self, candidateMention:list):#candidateMention: 멘션 후보
         self.mentionList = candidateMention#디버그용
         self.MAXENTROPHY = 3.0
+        self.IDX = 0
         #---------------------------------------------------
         self.craw = Crawling()
         self.FileIO = FileIO()#경로 넣을것!
         #---------------------------------------------------
         
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
-    def getGlobalIdx(self):
-        return newestPRIdx
     def makeAllNode(self):
         #self.FileIO.getTitleToID([])
         print("pickle load")
@@ -129,7 +124,7 @@ class Graph:
             for j in range(conceptNum):#하나의 멘션에 대한 컨셉들 수만큼 노드, 간선 만듬
                 #ni >= 2 인 것만 컨셉노드 생성
                 if sortedList[j][1] < 2:
-                    break;
+                    break
 
                 #이미 만든 컨셉 노드중에 같은 노드가 존재하는지 확인
                 index = self.compareConcepts(sortedList[j][0])
@@ -265,15 +260,16 @@ class Graph:
             oldIdx = (i+1)%2
             for vertex in allVertex:
                 sum=0
-                newestPRIdx = newIdx
+                
                 for edge in vertex.pointTo:
                     sum += edge.start.PR[oldIdx] * edge.P
                 vertex.PR[newIdx] = r *vertex.PR0  + (1-r)*sum
                 #print("name: "+ vertex.name + " PR: %lf"%( vertex.PR[newIdx]))
             
+        self.IDX = newIdx
         allPR = 0.0
         for j in allVertex:
-            allPR +=j.PR[newestPRIdx]
+            allPR +=j.PR[self.IDX]
 
         print("allPR: %lf"%(allPR))
         return
@@ -285,8 +281,8 @@ class Graph:
             maxPR = -1
             maxNode = -1
             for i in range(len(mNode.edges)):
-                if maxPR < mNode.edges[i].dest.PR[newIdx]:
-                    maxPR = mNode.edges[i].dest.PR[newIdx]
+                if maxPR < mNode.edges[i].dest.PR[self.IDX]:
+                    maxPR = mNode.edges[i].dest.PR[self.IDX]
                     maxNode = i
             #멘션노드가 아무노드와 연결되어있지 않는경우 에러 발생
 
@@ -312,7 +308,7 @@ class Graph:
         result_list = str(datetime.timedelta(seconds=sec))
         print(result_list)
         print("")
-
+        
         #컨셉노드끼리의 간선 이어야함
         print("makeEdgeCtoC")
         timeStart = time.time()
@@ -385,13 +381,13 @@ class Graph:
 if __name__ == '__main__':
     print("start program")
     timeStart = time.time()
-    #g = Graph(['Pivotal','Moment','Tesla', 'Unveils', 'First', 'Mass-Market','Sedan','Elon_Musk',"Tesla", 'chief', 'executive','cars','employees','owners','electric-car','marker','challenge','demand'])
-    g = Graph(['Samba', 'used', 'sysadmin', 'overcome', 'problem', 'interoperability', 'mixed', 'environment', 'Linux', 'Windows', 'It', 'provides', 'common', 'platform', 'Windows', 'Linux', 'common', 'sharing', 'space', 'Domain', 'controller', 'service', 'used', 'centralized', 'administration', 'users', 'groups', 'objects', 'network', 'This', 'service', 'enables', 'us', 'manage', 'authenticate', 'secure', 'users', 'login', 'related', 'data', 'This', 'tutorial', 'explains', 'configure', 'Samba', 'Linux', 'primary', 'domain', 'controller', 'Setup', 'Proper', 'Host', 'Name', 'Make', 'sure', 'setup', 'appropriate', 'hostname', 'static', 'ip', 'If', 'using', 'internal', 'ipaddress', 'like', 'access', 'internet', 'setup', 'appropriate', 'NAT', 'rules', 'firewall', 'In', 'tutorial', 'use', 'tgsexamplecom', 'hostname', 'vi', 'etcsysconfignetwork', 'HOSTNAMEtgsexamplecom', 'Make', 'sure', 'appropriate', 'static', 'ipaddress', 'setup', 'file', 'vi', 'Also', 'assign', 'gateway', 'dns', 'accordingly', 'etcsysconfignetwork', 'etcresolvconf', 'file', 'Verify', 'etchosts', 'file', 'entry', 'similar', 'following', 'vi', 'etchosts', 'tgsexamplecom', 'tgs', 'Also', 'make', 'sure', 'NTP', 'service', 'setup', 'running', 'properly', 'server', 'Install', 'Samba', 'Source', 'On', 'CentOS', 'default', 'samba', 'packages', 'installed', 'minimal', 'installation', 'type', 'First', 'install', 'following', 'dependent', 'packages', 'yum', 'install', 'glibc', 'glibcdevel', 'gcc', 'python', 'libacldevel', 'gitcore', 'openldapdevel', 'Next', 'download', 'samba', 'source', 'shown', 'git', 'clone', 'git', 'gitsambaorgsambagit', 'sambaserver', 'The', 'files', 'downloaded', 'sambaserver', 'directory', 'Install', 'samba', 'server', 'shown', 'cd', 'sambaserver', 'configure', 'enabledebug', 'enableselftest', 'make', 'make', 'install', 'Samba', 'installed', 'default', 'location', 'usrlocalsambabin', 'You', 'see', 'several', 'samba', 'client', 'utilities', 'installed', 'directory', 'cd', 'usrlocalsambabin', 'ls', 'cifsdd', 'ldbsearch', 'ntdbrestore', 'regshell', 'smbcquotas', 'tdbbackup', 'dbwraptool', 'locktest', 'ntdbtool', 'regtree', 'smbget', 'tdbdump', 'eventlogadm', 'masktest', 'ntlmauth', 'rpcclient', 'smbpasswd', 'tdbrestore', 'gentest', 'ndrdump', 'sambatool', 'smbspool', 'tdbtool', 'ldbadd', 'net', 'pdbedit', 'sharesec', 'smbstatus', 'testparm', 'ldbdel', 'nmblookup', 'pidl', 'smbcacls', 'smbtar', 'wbinfo', 'ldbedit', 'profiles', 'smbclient', 'smbtautil', 'ldbmodify', 'ntdbbackup', 'regdiff', 'smbtorture', 'ldbrename', 'ntdbdump', 'regpatch', 'smbcontrol', 'smbtree', 'Setup', 'Domain', 'Provision', 'To', 'start', 'domain', 'provision', 'execute', 'sambatool', 'shown', 'This', 'pickup', 'default', 'hostname', 'domain', 'name', 'configuration', 'files', 'usrlocalsambabinsambatool', 'domain', 'provision', 'Realm', 'EXAMPLECOM', 'Domain', 'EXAMPLE', 'Server', 'Role', 'dc', 'member', 'standalone', 'dc', 'DNS', 'backend', 'SAMBAINTERNAL', 'NONE', 'SAMBAINTERNAL', 'DNS', 'forwarder', 'IP', 'address', 'write', 'none', 'disable', 'forwarding', 'Administrator', 'password', 'Retype', 'password', 'Adding', 'DNS', 'accounts', 'Creating', 'CNMicrosoftDNS', 'CNSystem', 'DCexample', 'DCcom', 'Creating', 'DomainDnsZones', 'ForestDnsZones', 'partitions', 'Populating', 'DomainDnsZones', 'ForestDnsZones', 'partitions', 'Setting', 'samldb', 'rootDSE', 'marking', 'synchronized', 'Fixing', 'provision', 'GUIDs', 'A', 'Kerberos', 'configuration', 'suitable', 'Samba', 'generated', 'Once', 'files', 'installed', 'server', 'ready', 'use', 'Server', 'Role', 'active', 'directory', 'domain', 'controller', 'Hostname', 'tgs', 'NetBIOS', 'Domain', 'EXAMPLE', 'DNS', 'Domain', 'examplecom', 'DOMAIN', 'SID', 'Start', 'Samba', 'Service', 'Start', 'samba', 'service', 'shown', 'usrlocalsambasbinsamba', 'Add', 'following', 'entry', 'rclocal', 'file', 'make', 'sure', 'samba', 'service', 'starts', 'automatically', 'system', 'startup', 'echo', 'usrlocalsambasbinsamba', 'etcrcdrclocal', 'cat', 'etcrcdrclocal', 'touch', 'varlocksubsyslocal', 'usrlocalsambasbinsamba', 'Check', 'Samba', 'Version', 'YOu', 'verify', 'samba', 'version', 'using', 'samba', 'smbclient', 'command', 'shown', 'usrlocalsambasbinsamba', 'V', 'Version', 'usrlocalsambabinsmbclient', 'V', 'Version', 'The', 'following', 'command', 'display', 'Samba', 'shares', 'currently', 'available', 'usrlocalsambabinsmbclient', 'L', 'localhost', 'U', 'Domain', 'EXAMPLE', 'OS', 'Windows', 'Server', 'Samba', 'Sharename', 'Type', 'Comment', 'netlogon', 'Disk', 'sysvol', 'Disk', 'IPC', 'IPC', 'IPC', 'Service', 'Samba', 'Domain', 'EXAMPLE', 'OS', 'Windows', 'Server', 'Samba', 'Server', 'Comment', 'Workgroup', 'Master', 'Verify', 'able', 'login', 'using', 'administrator', 'username', 'password', 'usrlocalsambabinsmbclient', 'localhostnetlogon', 'Uadministrator', 'c', 'ls', 'Enter', 'administrator', 'password', 'Domain', 'EXAMPLE', 'OS', 'Windows', 'Server', 'Samba', 'D', 'Fri', 'Feb', 'D', 'Fri', 'Feb', 'blocks', 'size', 'blocks', 'available', 'Verify', 'Domains', 'Now', 'let', 'us', 'check', 'domain', 'functioning', 'expected', 'Check', 'SRV', 'A', 'record', 'shown', 'host', 'SRV', 'ldaptcpexamplecom', 'ldaptcpexamplecom', 'SRV', 'record', 'tgsexamplecom', 'host', 'SRV', 'kerberosudpexamplecom', 'kerberosudpexamplecom', 'SRV', 'record', 'tgsexamplecom', 'host', 'A', 'tgsexamplecom', 'tgsexamplecom', 'address', 'Use', 'sambatool', 'command', 'verify', 'realm', 'name', 'shown', 'usrlocalsambabinsambatool', 'testparm', 'suppressprompt', 'grep', 'realm', 'realm', 'EXAMPLECOM', 'Configure', 'Kerberos', 'Copy', 'sample', 'file', 'etc', 'directory', 'cp', 'Set', 'defaultrealm', 'domain', 'name', 'In', 'case', 'set', 'examplecom', 'cat', 'libdefaults', 'defaultrealm', 'EXAMPLECOM', 'dnslookuprealm', 'false', 'dnslookupkdc', 'true', 'Use', 'kinit', 'command', 'make', 'sure', 'Kerberos', 'setup', 'properly', 'shown', 'kinit', 'administrator', 'EXAMPLECOM', 'Password', 'administrator', 'EXAMPLECOM', 'Warning', 'Your', 'password', 'expire', 'days', 'Fri', 'Apr', 'Finally', 'use', 'Windows', 'remote', 'administrator', 'tool', 'connect', 'Samba', 'server', 'use', 'domain', 'controller', 'If', 'face', 'issues', 'process', 'make', 'sure', 'bring', 'system', 'uptodate', 'updating', 'packages', 'You', 'also', 'disable', 'SELinux', 'temporarily', 'review', 'auditlog', 'SELinux', 'related', 'error', 'messages', 'Also', 'make', 'sure', 'IPTables', 'rules', 'blocking', 'ports', 'required', 'Samba', 'communicate', 'servers'])
+    g = Graph(['Pivotal','Moment','Tesla', 'Unveils', 'First', 'Mass-Market','Sedan','Elon_Musk',"Tesla", 'chief', 'executive','cars','employees','owners','electric-car','marker','challenge','demand'])
+    #g = Graph(['Samba', 'used', 'sysadmin', 'overcome', 'problem', 'interoperability', 'mixed', 'environment', 'Linux', 'Windows', 'It', 'provides', 'common', 'platform', 'Windows', 'Linux', 'common', 'sharing', 'space', 'Domain', 'controller', 'service', 'used', 'centralized', 'administration', 'users', 'groups', 'objects', 'network', 'This', 'service', 'enables', 'us', 'manage', 'authenticate', 'secure', 'users', 'login', 'related', 'data', 'This', 'tutorial', 'explains', 'configure', 'Samba', 'Linux', 'primary', 'domain', 'controller', 'Setup', 'Proper', 'Host', 'Name', 'Make', 'sure', 'setup', 'appropriate', 'hostname', 'static', 'ip', 'If', 'using', 'internal', 'ipaddress', 'like', 'access', 'internet', 'setup', 'appropriate', 'NAT', 'rules', 'firewall', 'In', 'tutorial', 'use', 'tgsexamplecom', 'hostname', 'vi', 'etcsysconfignetwork', 'HOSTNAMEtgsexamplecom', 'Make', 'sure', 'appropriate', 'static', 'ipaddress', 'setup', 'file', 'vi', 'Also', 'assign', 'gateway', 'dns', 'accordingly', 'etcsysconfignetwork', 'etcresolvconf', 'file', 'Verify', 'etchosts', 'file', 'entry', 'similar', 'following', 'vi', 'etchosts', 'tgsexamplecom', 'tgs', 'Also', 'make', 'sure', 'NTP', 'service', 'setup', 'running', 'properly', 'server', 'Install', 'Samba', 'Source', 'On', 'CentOS', 'default', 'samba', 'packages', 'installed', 'minimal', 'installation', 'type', 'First', 'install', 'following', 'dependent', 'packages', 'yum', 'install', 'glibc', 'glibcdevel', 'gcc', 'python', 'libacldevel', 'gitcore', 'openldapdevel', 'Next', 'download', 'samba', 'source', 'shown', 'git', 'clone', 'git', 'gitsambaorgsambagit', 'sambaserver', 'The', 'files', 'downloaded', 'sambaserver', 'directory', 'Install', 'samba', 'server', 'shown', 'cd', 'sambaserver', 'configure', 'enabledebug', 'enableselftest', 'make', 'make', 'install', 'Samba', 'installed', 'default', 'location', 'usrlocalsambabin', 'You', 'see', 'several', 'samba', 'client', 'utilities', 'installed', 'directory', 'cd', 'usrlocalsambabin', 'ls', 'cifsdd', 'ldbsearch', 'ntdbrestore', 'regshell', 'smbcquotas', 'tdbbackup', 'dbwraptool', 'locktest', 'ntdbtool', 'regtree', 'smbget', 'tdbdump', 'eventlogadm', 'masktest', 'ntlmauth', 'rpcclient', 'smbpasswd', 'tdbrestore', 'gentest', 'ndrdump', 'sambatool', 'smbspool', 'tdbtool', 'ldbadd', 'net', 'pdbedit', 'sharesec', 'smbstatus', 'testparm', 'ldbdel', 'nmblookup', 'pidl', 'smbcacls', 'smbtar', 'wbinfo', 'ldbedit', 'profiles', 'smbclient', 'smbtautil', 'ldbmodify', 'ntdbbackup', 'regdiff', 'smbtorture', 'ldbrename', 'ntdbdump', 'regpatch', 'smbcontrol', 'smbtree', 'Setup', 'Domain', 'Provision', 'To', 'start', 'domain', 'provision', 'execute', 'sambatool', 'shown', 'This', 'pickup', 'default', 'hostname', 'domain', 'name', 'configuration', 'files', 'usrlocalsambabinsambatool', 'domain', 'provision', 'Realm', 'EXAMPLECOM', 'Domain', 'EXAMPLE', 'Server', 'Role', 'dc', 'member', 'standalone', 'dc', 'DNS', 'backend', 'SAMBAINTERNAL', 'NONE', 'SAMBAINTERNAL', 'DNS', 'forwarder', 'IP', 'address', 'write', 'none', 'disable', 'forwarding', 'Administrator', 'password', 'Retype', 'password', 'Adding', 'DNS', 'accounts', 'Creating', 'CNMicrosoftDNS', 'CNSystem', 'DCexample', 'DCcom', 'Creating', 'DomainDnsZones', 'ForestDnsZones', 'partitions', 'Populating', 'DomainDnsZones', 'ForestDnsZones', 'partitions', 'Setting', 'samldb', 'rootDSE', 'marking', 'synchronized', 'Fixing', 'provision', 'GUIDs', 'A', 'Kerberos', 'configuration', 'suitable', 'Samba', 'generated', 'Once', 'files', 'installed', 'server', 'ready', 'use', 'Server', 'Role', 'active', 'directory', 'domain', 'controller', 'Hostname', 'tgs', 'NetBIOS', 'Domain', 'EXAMPLE', 'DNS', 'Domain', 'examplecom', 'DOMAIN', 'SID', 'Start', 'Samba', 'Service', 'Start', 'samba', 'service', 'shown', 'usrlocalsambasbinsamba', 'Add', 'following', 'entry', 'rclocal', 'file', 'make', 'sure', 'samba', 'service', 'starts', 'automatically', 'system', 'startup', 'echo', 'usrlocalsambasbinsamba', 'etcrcdrclocal', 'cat', 'etcrcdrclocal', 'touch', 'varlocksubsyslocal', 'usrlocalsambasbinsamba', 'Check', 'Samba', 'Version', 'YOu', 'verify', 'samba', 'version', 'using', 'samba', 'smbclient', 'command', 'shown', 'usrlocalsambasbinsamba', 'V', 'Version', 'usrlocalsambabinsmbclient', 'V', 'Version', 'The', 'following', 'command', 'display', 'Samba', 'shares', 'currently', 'available', 'usrlocalsambabinsmbclient', 'L', 'localhost', 'U', 'Domain', 'EXAMPLE', 'OS', 'Windows', 'Server', 'Samba', 'Sharename', 'Type', 'Comment', 'netlogon', 'Disk', 'sysvol', 'Disk', 'IPC', 'IPC', 'IPC', 'Service', 'Samba', 'Domain', 'EXAMPLE', 'OS', 'Windows', 'Server', 'Samba', 'Server', 'Comment', 'Workgroup', 'Master', 'Verify', 'able', 'login', 'using', 'administrator', 'username', 'password', 'usrlocalsambabinsmbclient', 'localhostnetlogon', 'Uadministrator', 'c', 'ls', 'Enter', 'administrator', 'password', 'Domain', 'EXAMPLE', 'OS', 'Windows', 'Server', 'Samba', 'D', 'Fri', 'Feb', 'D', 'Fri', 'Feb', 'blocks', 'size', 'blocks', 'available', 'Verify', 'Domains', 'Now', 'let', 'us', 'check', 'domain', 'functioning', 'expected', 'Check', 'SRV', 'A', 'record', 'shown', 'host', 'SRV', 'ldaptcpexamplecom', 'ldaptcpexamplecom', 'SRV', 'record', 'tgsexamplecom', 'host', 'SRV', 'kerberosudpexamplecom', 'kerberosudpexamplecom', 'SRV', 'record', 'tgsexamplecom', 'host', 'A', 'tgsexamplecom', 'tgsexamplecom', 'address', 'Use', 'sambatool', 'command', 'verify', 'realm', 'name', 'shown', 'usrlocalsambabinsambatool', 'testparm', 'suppressprompt', 'grep', 'realm', 'realm', 'EXAMPLECOM', 'Configure', 'Kerberos', 'Copy', 'sample', 'file', 'etc', 'directory', 'cp', 'Set', 'defaultrealm', 'domain', 'name', 'In', 'case', 'set', 'examplecom', 'cat', 'libdefaults', 'defaultrealm', 'EXAMPLECOM', 'dnslookuprealm', 'false', 'dnslookupkdc', 'true', 'Use', 'kinit', 'command', 'make', 'sure', 'Kerberos', 'setup', 'properly', 'shown', 'kinit', 'administrator', 'EXAMPLECOM', 'Password', 'administrator', 'EXAMPLECOM', 'Warning', 'Your', 'password', 'expire', 'days', 'Fri', 'Apr', 'Finally', 'use', 'Windows', 'remote', 'administrator', 'tool', 'connect', 'Samba', 'server', 'use', 'domain', 'controller', 'If', 'face', 'issues', 'process', 'make', 'sure', 'bring', 'system', 'uptodate', 'updating', 'packages', 'You', 'also', 'disable', 'SELinux', 'temporarily', 'review', 'auditlog', 'SELinux', 'related', 'error', 'messages', 'Also', 'make', 'sure', 'IPTables', 'rules', 'blocking', 'ports', 'required', 'Samba', 'communicate', 'servers'])
     result=g.getAnnotation(5)
     print("\n")
     for i in range(len(result)):
         print("node: "+result[i].name)
-        print("PR: %lf"%(result[i].PR[newestPRIdx]))
+        print("PR: %lf"%(result[i].PR[g.IDX]))
     timeEnd = time.time()
     sec = timeEnd - timeStart
     result_list = str(datetime.timedelta(seconds=sec))
