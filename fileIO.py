@@ -3,6 +3,7 @@ import numpy as np
 from multiprocessing import Process, freeze_support, Manager
 
 from util import Util
+from crawling import Crawling
 
 class FileIO():
     def __init__(self, local = './'):
@@ -24,7 +25,9 @@ class FileIO():
         self.nameAnkerTargetID = local + 'Arr2.pkl'
         self.nameNowPageID = local +'Arr3.pkl'
         self.nameBack = local + 'backlinks/'
+        self.namePr0den = local + 'pr0dens/'
 
+        self.craw = Crawling()
         #self.m = Manager()
 
     #encode/decode----------------------------------------------------
@@ -56,6 +59,17 @@ class FileIO():
         with open(fileName,'rb') as f:
             ret = pic.load(f)
         return ret
+
+    def getPR0den(self, ankerText):
+        fileName = self.namePr0den + self.nameEncode(ankerText)
+        try:
+            with open(fileName, "r") as f:
+                return int(f.read())
+        except:
+            pr0den = self.craw.getPR0den(ankerText)
+            with open(fileName, "w") as f:
+                f.write(str(pr0den))
+            return pr0den
 
     #!!!
     def getIDToTitle(self, inps:list):

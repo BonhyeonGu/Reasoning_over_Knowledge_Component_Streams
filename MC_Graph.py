@@ -5,7 +5,6 @@ import operator
 import math
 import pickle
 
-from crawling import Crawling
 from fileIO import FileIO
 
 import time 
@@ -61,8 +60,7 @@ class Graph:
         self.MAXENTROPHY = 3.0
         self.IDX = 0
         #---------------------------------------------------
-        self.craw = Crawling()
-        self.FileIO = FileIO()#경로 넣을것!
+        self.FileIO = FileIO('D:\\Non\\')#경로 넣을것!
         #---------------------------------------------------
         
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -197,7 +195,7 @@ class Graph:
 
             pageDict = getDict(self.anchorTextRange[i], PageID)
             
-            self.mentionVertex[i].PR0 = len(pageDict)/self.craw.getPR0den(self.mentionVertex[i].name)#Crawling에 만들어놓은거 그대로 사용
+            self.mentionVertex[i].PR0 = len(pageDict)/self.FileIO.getPR0den(self.mentionVertex[i].name)#Crawling에 만들어놓은거 그대로 사용
             sum +=self.mentionVertex[i].PR0
         z = 1/sum
         timeEnd = time.time()
