@@ -8,7 +8,8 @@ class WikificationTest:
         self.inputForward = text
         self.preProcess()
         g = Graph(self.inputForward)
-        result = g.getAnnotation(5)
+        g.getAnnotation(5)
+        result = g.getGlobalIdx()
         print("\n")
         for i in range(len(result)):
             print("node: "+result[i].name)
