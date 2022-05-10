@@ -71,18 +71,29 @@ class Graph:
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
 
     def makeAllNode(self):
+        #self.FileIO.getTitleToID([])
+        print("pickle load")
+        timeStart = time.time()
         self.anchorTextRange = self.FileIO.ankerTextToRangeSingle(self.mentionList)
         #없는 텍스트인지 확인해봐야함
 
         TargetID=list()
         TargetID = self.FileIO.callListAnkerTargetID()
+        timeEnd = time.time()
+        sec = timeEnd - timeStart
+        result_list = str(datetime.timedelta(seconds=sec))
+        print(result_list)
         li = self.mentionList
 
         self.mentionVertex=[]#멘션 노드 저장장소
         self.conceptVertex=[]#컨셉 노드 저장장소
+        mentionVertexAppend = self.mentionVertex.append
+        conceptVertexAppend = self.conceptVertex.append
 
         mentionSets = set()#비교 연산을 위한 집합
+        mentionSetAdd = mentionSets.add
         sortedList = list()
+
         for i in range(len(li)):
             #앵커텍스트로서 존재하지 않는 단어는 제외
             if self.anchorTextRange[i] == -1:
@@ -111,8 +122,8 @@ class Graph:
 
             #멘션노드 생성
             nowMention = Vertex(0,li[i])
-            self.mentionVertex.append(nowMention)
-            mentionSets.add(nowMention.name)
+            mentionVertexAppend(nowMention)
+            mentionSetAdd(nowMention.name)
 
             for j in range(conceptNum):#하나의 멘션에 대한 컨셉들 수만큼 노드, 간선 만듬
                 #ni >= 2 인 것만 컨셉노드 생성
@@ -123,7 +134,7 @@ class Graph:
                 index = self.compareConcepts(sortedList[j][0])
                 if(index == -1):#컨셉 노드 없으면 새로만듬
                     nowConcept = Vertex(1,sortedList[j][0])
-                    self.conceptVertex.append(nowConcept)
+                    conceptVertexAppend(nowConcept)
                 else:
                     nowConcept = self.conceptVertex[index]
 
@@ -149,7 +160,8 @@ class Graph:
                 if(i == j):#자기자신을 가리키는 간선 안생김
                     continue
                 #i 에서 j로 가는 간선만듬
-                N = len(self.conceptVertex)
+                #N = len(self.conceptVertex)
+                N=1633324#전체 아이디 개수
                 SR = self.calcSR(self.FileIO.getBacklinks(self.conceptVertex[i].name+"_backlinks.pickle"),self.FileIO.getBacklinks(self.conceptVertex[j].name+"_backlinks.pickle"),N)
 
                 if(SR > 0):#SR값이 0보다커야 간선 추가함
@@ -167,14 +179,23 @@ class Graph:
 
     def calcPR0(self):
         sum = 0
-
+        print("pickle load")
+        timeStart = time.time()
         PageID = self.FileIO.callListNowPageID()
+        timeEnd = time.time()
+        sec = timeEnd - timeStart
+        result_list = str(datetime.timedelta(seconds=sec))
+        print(result_list)
+        
         delIdx = []
         for i in range(len(self.anchorTextRange)):
             if self.anchorTextRange[i] == -1:
                 delIdx.append(i-len(delIdx))
         for i in delIdx:
             self.anchorTextRange.pop(i)
+
+        print("crawling")
+        timeStart = time.time()
         for i in range(len(self.anchorTextRange)):#z를 제외한 계산 완료
             #u를 앵커텍스트로 가지는 페이지 수 구해서 분자로 넣어주기
 
@@ -183,6 +204,10 @@ class Graph:
             self.mentionVertex[i].PR0 = len(pageDict)/self.craw.getPR0den(self.mentionVertex[i].name)#Crawling에 만들어놓은거 그대로 사용
             sum +=self.mentionVertex[i].PR0
         z = 1/sum
+        timeEnd = time.time()
+        sec = timeEnd - timeStart
+        result_list = str(datetime.timedelta(seconds=sec))
+        print(result_list)
         for i in self.mentionVertex:#z를 곱해줘서 계산 완료
             i.PR0 *= z
 
@@ -320,11 +345,8 @@ class Graph:
         #PR계산
         print("calcPR")
         timeStart = time.time()
-        #초기 PR값 = 1/컨셉노드 
-        l = len(self.conceptVertex)
-        for i in self.conceptVertex:
-            i.PR = [1/l,1/l]
-        self.calcPR(50)
+        
+        self.calcPR(100)
         timeEnd = time.time()
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
@@ -362,8 +384,8 @@ class Graph:
 if __name__ == '__main__':
     print("start program")
     timeStart = time.time()
-    g = Graph(['Pivotal','Moment','Tesla', 'Unveils', 'First', 'Mass-Market','Sedan','Elon_Musk',"Tesla", 'chief', 'executive','cars','employees','owners','electric-car','marker','challenge','demand'])
-    #g = Graph(['cat', 'dog'])
+    #g = Graph(['Pivotal','Moment','Tesla', 'Unveils', 'First', 'Mass-Market','Sedan','Elon_Musk',"Tesla", 'chief', 'executive','cars','employees','owners','electric-car','marker','challenge','demand'])
+    g = Graph(['cat', 'dog','cake','piece','key','purple','market','quality'])
     result=g.getAnnotation(5)
     print("\n")
     for i in range(len(result)):
