@@ -25,7 +25,7 @@ class FileIO():
         self.nameNowPageID = local +'Arr3.pkl'
         self.nameBack = local + 'backlinks/'
 
-        self.m = Manager()
+        #self.m = Manager()
 
     #encode/decode----------------------------------------------------
     def nameEncode(self, s:str):
