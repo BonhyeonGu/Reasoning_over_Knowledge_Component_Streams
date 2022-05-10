@@ -5,6 +5,8 @@ import operator
 import math
 import pickle
 
+from numpy import dtype
+
 from fileIO import FileIO
 
 import time 
@@ -127,7 +129,7 @@ class Graph:
                 #이미 만든 컨셉 노드중에 같은 노드가 존재하는지 확인
                 index = self.compareConcepts(sortedList[j][0])
                 if(index == -1):#컨셉 노드 없으면 새로만듬
-                    nowConcept = Vertex(1,sortedList[j][0])
+                    nowConcept = Vertex(1,str(sortedList[j][0]))
                     conceptVertexAppend(nowConcept)
                 else:
                     nowConcept = self.conceptVertex[index]
@@ -156,6 +158,7 @@ class Graph:
                 #i 에서 j로 가는 간선만듬
                 #N = len(self.conceptVertex)
                 N=1633324#전체 아이디 개수
+                
                 SR = self.calcSR(self.FileIO.getBacklinks(self.conceptVertex[i].name+"_backlinks.pickle"),self.FileIO.getBacklinks(self.conceptVertex[j].name+"_backlinks.pickle"),N)
 
                 if(SR > 0):#SR값이 0보다커야 간선 추가함
