@@ -140,25 +140,28 @@ class FileIO():
             s = 0
             e = len(arr)
             while(True):
-                if s == (e - 1):
-                    ret.append(-1)
-                    break
-                m = s + (e - s) // 2
+                m = (s + e) // 2
+                #print(arr[m])
                 if inp == arr[m]:
-                    for i in range(m, s - 1, -1):
+                    for i in range(m, s - 2, -1):
+                        #print(arr[m])
                         if arr[i] != inp:
-                            retS = i
+                            retS = i+1
                             break
-                    for i in range(m, e):
+                    for i in range(m, e + 2):
+                        #print(arr[m])
                         if arr[i] != inp:
                             retE = i
                             break
                     ret.append((retS, retE))
                     break
+                elif s >= e:
+                    ret.append(-1)
+                    break
                 elif inp < arr[m]:
-                    e = m
+                    e = m-1
                 else:
-                    s = m
+                    s = m+1
         return ret
     #-------------------------------------------------------------------
 
