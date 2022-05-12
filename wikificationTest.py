@@ -11,7 +11,7 @@ class WikificationTest:
         sett:queue.Queue = self.urlToSplitQueue(splitSec, url)
         c = 1
 
-        f = open('./out.txt', 'w')
+        f = open('./out.txt', 'w', encoding='utf-8')
         while sett.qsize() != 0:
             subInSec = sett.get()
             f.write("%s\n" % (subInSec))
@@ -43,7 +43,7 @@ class WikificationTest:
             ytid += char
         
         nowSec = splitSec
-        srt:list = YouTubeTranscriptApi.get_transcript(ytid, languages=['en'])
+        srt:list = YouTubeTranscriptApi.get_transcript(ytid, languages=['en', 'en-US'])
         sentense = ''
         for st in srt:
             if st['start'] >= nowSec:
@@ -76,4 +76,4 @@ class WikificationTest:
         #print(out)
         return out
 
-WikificationTest('https://www.youtube.com/watch?v=NLdZ8Zex1cw', 300.0)
+WikificationTest('https://www.youtube.com/watch?v=egD6qsRapNY', 300.0)
