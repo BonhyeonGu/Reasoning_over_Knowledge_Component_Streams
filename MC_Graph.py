@@ -66,7 +66,7 @@ class Graph:
         self.MAXENTROPHY = 3.0
         self.IDX = 0
         #---------------------------------------------------
-        self.FileIO = FileIO()#경로 넣을것!
+        self.FileIO = FileIO('D:\\Non\\')#경로 넣을것!
         #---------------------------------------------------
         
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -298,7 +298,6 @@ class Graph:
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
         print(result_list)
-        print("")
         
         #컨셉노드끼리의 간선 이어야함
         print("makeEdgeCtoC")
@@ -308,7 +307,6 @@ class Graph:
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
         print(result_list)
-        print("")
 
         #PR0 계산
         print("calcPR0")
@@ -318,7 +316,6 @@ class Graph:
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
         print(result_list)
-        print("")
 
         #P(c,c')계산
         print("calcPosibilityCtoC")
@@ -328,7 +325,6 @@ class Graph:
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
         print(result_list)
-        print("")
 
         #PR계산
         print("calcPR")
@@ -339,7 +335,6 @@ class Graph:
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
         print(result_list)
-        print("")
 
         #멘션노드당 하나씩 최고 PR값 높은 컨셉노드 구하기
         print("calcSupportConcept")
@@ -349,7 +344,6 @@ class Graph:
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
         print(result_list)
-        print("")
 
         #ID를 타이틀로 변환시킬 준비
         print("getIDToTitle")
@@ -366,7 +360,6 @@ class Graph:
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
         print(result_list)
-        print("")
         del IDList
         return supportNodeList[:numberOfAnnotation]
 

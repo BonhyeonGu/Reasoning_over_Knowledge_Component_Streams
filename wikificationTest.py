@@ -7,18 +7,30 @@ from nltk.corpus import stopwords
 from youtube_transcript_api import YouTubeTranscriptApi
 
 class WikificationTest:
-    def __init__(self, url):
-        sett:queue.Queue = self.urlToSplitQueue(300.0, url)
+    def __init__(self, url, splitSec):
+        sett:queue.Queue = self.urlToSplitQueue(splitSec, url)
+        c = 1
+
+        f = open('./out.txt', 'w')
         while sett.qsize() != 0:
             subInSec = sett.get()
+            f.write("%s\n" % (subInSec))
             #print(subInSec)
             g = Graph(self.preProcess(subInSec))
             result = g.getAnnotation(5)
-            print("\n")
+            print("")
+            print("%d : %d ~ %d" % (c, (splitSec * c - splitSec) / 60, (splitSec * c) / 60))
+            f.write("%d : %d ~ %d\n" % (c, (splitSec * c - splitSec) / 60, (splitSec * c) / 60))
             for i in range(len(result)):
-                print("node: "+result[i].name)
-                print("PR: %lf"%(result[i].PR[g.IDX]))
-                print("")       
+                print("%lf : %s"%(result[i].PR[g.IDX], result[i].name))
+                f.write("%lf : %s\n"%(result[i].PR[g.IDX], result[i].name))
+                #print("node: "+result[i].name)
+                #print("PR: %lf"%(result[i].PR[g.IDX]))
+                #print("")       
+            c += 1
+            f.write("\n")
+            print("")
+        f.close()
 
     def urlToSplitQueue(self, splitSec, url:str):
         ret = queue.Queue()
@@ -64,4 +76,4 @@ class WikificationTest:
         #print(out)
         return out
 
-WikificationTest('https://www.youtube.com/watch?v=49g2M0Yv4DU')
+WikificationTest('https://www.youtube.com/watch?v=NLdZ8Zex1cw', 300.0)
