@@ -64,6 +64,4 @@ class WikificationTest:
         #print(out)
         return out
 
-with open('./inp.txt', 'rt', encoding='utf-8') as f:
-    text = f.read()
 WikificationTest('https://www.youtube.com/watch?v=49g2M0Yv4DU')
