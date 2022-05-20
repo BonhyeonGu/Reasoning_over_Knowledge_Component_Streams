@@ -3,7 +3,7 @@ import queue
 import string
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
-
+from concatenWord import concatening
 from youtube_transcript_api import YouTubeTranscriptApi
 
 class WikificationTest:
@@ -74,6 +74,6 @@ class WikificationTest:
         # filter out stop words
         out = [w for w in words if not w in stopWords]
         #print(out)
-        return out
+        return concatening(out,5)
 
 WikificationTest('https://www.youtube.com/watch?v=egD6qsRapNY', 300.0)
