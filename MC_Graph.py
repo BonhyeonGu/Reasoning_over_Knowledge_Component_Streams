@@ -6,23 +6,17 @@ from operator import itemgetter
 from math import log2
 import pickle
 
-from collections import defaultdict
-from numpy import dtype
+from collections import defaultdict, Counter
 
 from fileIO import FileIO
 
 import time 
 import datetime
 
-
 def getDict(anchorRange:tuple, TargetID:tuple) -> dict:
     entDict = defaultdict(int)
     for i in range(anchorRange[0], anchorRange[1]):
         entDict[TargetID[i]]+=1
-        # try:
-        #     entDict[TargetID[i]]+=1
-        # except KeyError:
-        #     entDict[TargetID[i]]=1
         
     return entDict
 
@@ -66,7 +60,7 @@ class Graph:
         self.MAXENTROPHY = 3.0
         self.IDX = 0
         #---------------------------------------------------
-        self.FileIO = FileIO('D:\\Non\\')#경로 넣을것!
+        self.FileIO = FileIO()#경로 넣을것!
         #---------------------------------------------------
         
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -77,19 +71,21 @@ class Graph:
 
         TargetID = self.FileIO.callListAnkerTargetID()
         TargetID = tuple(TargetID)
-
         PageID = self.FileIO.callListNowPageID()
         PageID = tuple(PageID)
 
-        li = tuple(self.mentionList)
+        li = self.mentionList
         
         mentionVertexAppend = mentionVertex.append
         conceptVertexAppend = conceptVertex.append
 
-        conceptDict = dict()
+        
         sortedList = list()
+        conceptCandidateList = list()
+        anchorTextNum = list()
         i = -1
-
+        NameEncoder = self.FileIO.nameEncode
+        GetPR0Den = self.FileIO.getPR0den
         
         for mention in li:
             i+=1
@@ -99,61 +95,64 @@ class Graph:
 
             #n = 전체 앵커텍스트 개수
             n = anchorTextRange[i][1]-anchorTextRange[i][0]
-            if n <0:
-                print("debug")
             
             # try:
-            #     with open("./entrophy/"+mention+".pkl","rb") as inpf:
+            #     with open("./entrophy/"+NameEncoder(mention)+".pkl","rb") as inpf:
             #         entDict = pickle.load(inpf)
             # except FileNotFoundError:
             #     entDict = getDict(anchorTextRange[i],TargetID)
-            #     with open("./entrophy/"+mention+".pkl","wb") as outf:
+            #     with open("./entrophy/"+NameEncoder(mention)+".pkl","wb") as outf:
             #         pickle.dump(entDict,outf)
             entDict = getDict(anchorTextRange[i],TargetID)
             entrophy = calcEnt(entDict,n)
             #엔트로피 통과하는지 확인
             if entrophy >=self.MAXENTROPHY:
                 continue
-            
+            anchorTextNum.append(n)
             #딕셔너리 정렬
             sortedList = sorted(entDict.items(), key = itemgetter(1), reverse=True )
+            conceptCandidateList.append(tuple(sortedList[:20]))
 
             #멘션노드 생성
             nowMention = Vertex(0,mention)
 
             pageDict = getDict(anchorTextRange[i], PageID)
-            nowMention.PR0 = len(pageDict)/self.FileIO.getPR0den(nowMention.name)#Crawling에 만들어놓은거 그대로 사용
+            nowMention.PR0 = len(pageDict)/GetPR0Den(mention)#Crawling에 만들어놓은거 그대로 사용
 
-            nowMentionEdgeAppend = nowMention.edges.append
             mentionVertexAppend(nowMention)
+        conceptDict = dict()
+        conceptCandidateList = tuple(conceptCandidateList)
+        anchorTextNum = tuple(anchorTextNum)
+        i = -1
+        for mentionNode in mentionVertex:
+            i+=1
+            j=-1
             
-            
-            for factor in sortedList[:20]:#하나의 멘션에 대한 컨셉들 수만큼 노드, 간선 만듬
+            for conceptCandidate in conceptCandidateList[i]:#하나의 멘션에 대한 컨셉들 수만큼 노드, 간선 만듬
+                j+=1
                 #ni >= 2 인 것만 컨셉노드 생성
-                if factor[1] < 2:
+                if conceptCandidate[1] < 2:
                     break
 
                 #이미 만든 컨셉 노드중에 같은 노드가 존재하는지 확인
                 try:
-                    nowConcept = conceptDict[factor[0]]
+                    nowConcept = conceptDict[conceptCandidate[0]]
                 except KeyError:
-                    nowConcept = Vertex(1,str(factor[0]))
-                    conceptDict[factor[0]] = nowConcept
+                    nowConcept = Vertex(1,str(conceptCandidate[0]))
+                    conceptDict[conceptCandidate[0]] = nowConcept
                     conceptVertexAppend(nowConcept)
 
 
                 edge = Edge(0)#mention to concept 엣지 생성
-                edge.P = factor[1] / n #P(가중치) 계산
+                edge.P = conceptCandidate[1] / anchorTextNum[i] #P(가중치) 계산
                 #컨셉노드와 엣지 연결
                 edge.dest = nowConcept
-                edge.start = nowMention
+                edge.start = mentionNode
 
-                nowMentionEdgeAppend(edge)#멘션노드와 엣지 연결
+                mentionNode.edges.append(edge)#멘션노드와 엣지 연결
                 nowConcept.pointTo.append(edge)#컨셉노드에 자신을가리키는 엣지 리스트에 추가
             #하나의 멘션에대한 컨셉노드 연결 끝
             
-            pageDict.clear()
-            entDict.clear()
         #모든 멘션에대한 노드 만들기 끝 
         
         del TargetID
@@ -363,11 +362,11 @@ class Graph:
         del IDList
         return supportNodeList[:numberOfAnnotation]
 
-if __name__ == '__main__':
+if __name__ == '__main__':       
     print("start program")
     timeStart = time.time()
     #g = Graph(['cat', 'dog'])
-    g = Graph(['Add','Samba', 'used', 'sysadmin', 'overcome', 'problem', 'interoperability', 'mixed', 'environment', 'Linux', 'Windows', 'It', 'provides', 'common', 'platform', 'Windows', 'Linux', 'common', 'sharing', 'space', 'Domain', 'controller', 'service', 'used', 'centralized', 'administration', 'users', 'groups', 'objects', 'network', 'This', 'service', 'enables', 'us', 'manage', 'authenticate', 'secure', 'users', 'login', 'related', 'data', 'This', 'tutorial', 'explains', 'configure', 'Samba', 'Linux', 'primary', 'domain', 'controller', 'Setup', 'Proper', 'Host', 'Name', 'Make', 'sure', 'setup', 'appropriate', 'hostname', 'static', 'ip', 'If', 'using', 'internal', 'ipaddress', 'like', 'access', 'internet', 'setup', 'appropriate', 'NAT', 'rules', 'firewall', 'In', 'tutorial', 'use', 'tgsexamplecom', 'hostname', 'vi', 'etcsysconfignetwork', 'HOSTNAMEtgsexamplecom', 'Make', 'sure', 'appropriate', 'static', 'ipaddress', 'setup', 'file', 'vi', 'Also', 'assign', 'gateway', 'dns', 'accordingly', 'etcsysconfignetwork', 'etcresolvconf', 'file', 'Verify', 'etchosts', 'file', 'entry', 'similar', 'following', 'vi', 'etchosts', 'tgsexamplecom', 'tgs', 'Also', 'make', 'sure', 'NTP', 'service', 'setup', 'running', 'properly', 'server', 'Install', 'Samba', 'Source', 'On', 'CentOS', 'default', 'samba', 'packages', 'installed', 'minimal', 'installation', 'type', 'First', 'install', 'following', 'dependent', 'packages', 'yum', 'install', 'glibc', 'glibcdevel', 'gcc', 'python', 'libacldevel', 'gitcore', 'openldapdevel', 'Next', 'download', 'samba', 'source', 'shown', 'git', 'clone', 'git', 'gitsambaorgsambagit', 'sambaserver', 'The', 'files', 'downloaded', 'sambaserver', 'directory', 'Install', 'samba', 'server', 'shown', 'cd', 'sambaserver', 'configure', 'enabledebug', 'enableselftest', 'make', 'make', 'install', 'Samba', 'installed', 'default', 'location', 'usrlocalsambabin', 'You', 'see', 'several', 'samba', 'client', 'utilities', 'installed', 'directory', 'cd', 'usrlocalsambabin', 'ls', 'cifsdd', 'ldbsearch', 'ntdbrestore', 'regshell', 'smbcquotas', 'tdbbackup', 'dbwraptool', 'locktest', 'ntdbtool', 'regtree', 'smbget', 'tdbdump', 'eventlogadm', 'masktest', 'ntlmauth', 'rpcclient', 'smbpasswd', 'tdbrestore', 'gentest', 'ndrdump', 'sambatool', 'smbspool', 'tdbtool', 'ldbadd', 'net', 'pdbedit', 'sharesec', 'smbstatus', 'testparm', 'ldbdel', 'nmblookup', 'pidl', 'smbcacls', 'smbtar', 'wbinfo', 'ldbedit', 'profiles', 'smbclient', 'smbtautil', 'ldbmodify', 'ntdbbackup', 'regdiff', 'smbtorture', 'ldbrename', 'ntdbdump', 'regpatch', 'smbcontrol', 'smbtree', 'Setup', 'Domain', 'Provision', 'To', 'start', 'domain', 'provision', 'execute', 'sambatool', 'shown', 'This', 'pickup', 'default', 'hostname', 'domain', 'name', 'configuration', 'files', 'usrlocalsambabinsambatool', 'domain', 'provision', 'Realm', 'EXAMPLECOM', 'Domain', 'EXAMPLE', 'Server', 'Role', 'dc', 'member', 'standalone', 'dc', 'DNS', 'backend', 'SAMBAINTERNAL', 'NONE', 'SAMBAINTERNAL', 'DNS', 'forwarder', 'IP', 'address', 'write', 'none', 'disable', 'forwarding', 'Administrator', 'password', 'Retype', 'password', 'Adding', 'DNS', 'accounts', 'Creating', 'CNMicrosoftDNS', 'CNSystem', 'DCexample', 'DCcom', 'Creating', 'DomainDnsZones', 'ForestDnsZones', 'partitions', 'Populating', 'DomainDnsZones', 'ForestDnsZones', 'partitions', 'Setting', 'samldb', 'rootDSE', 'marking', 'synchronized', 'Fixing', 'provision', 'GUIDs', 'A', 'Kerberos', 'configuration', 'suitable', 'Samba', 'generated', 'Once', 'files', 'installed', 'server', 'ready', 'use', 'Server', 'Role', 'active', 'directory', 'domain', 'controller', 'Hostname', 'tgs', 'NetBIOS', 'Domain', 'EXAMPLE', 'DNS', 'Domain', 'examplecom', 'DOMAIN', 'SID', 'Start', 'Samba', 'Service', 'Start', 'samba', 'service', 'shown', 'usrlocalsambasbinsamba', 'Add', 'following', 'entry', 'rclocal', 'file', 'make', 'sure', 'samba', 'service', 'starts', 'automatically', 'system', 'startup', 'echo', 'usrlocalsambasbinsamba', 'etcrcdrclocal', 'cat', 'etcrcdrclocal', 'touch', 'varlocksubsyslocal', 'usrlocalsambasbinsamba', 'Check', 'Samba', 'Version', 'YOu', 'verify', 'samba', 'version', 'using', 'samba', 'smbclient', 'command', 'shown', 'usrlocalsambasbinsamba', 'V', 'Version', 'usrlocalsambabinsmbclient', 'V', 'Version', 'The', 'following', 'command', 'display', 'Samba', 'shares', 'currently', 'available', 'usrlocalsambabinsmbclient', 'L', 'localhost', 'U', 'Domain', 'EXAMPLE', 'OS', 'Windows', 'Server', 'Samba', 'Sharename', 'Type', 'Comment', 'netlogon', 'Disk', 'sysvol', 'Disk', 'IPC', 'IPC', 'IPC', 'Service', 'Samba', 'Domain', 'EXAMPLE', 'OS', 'Windows', 'Server', 'Samba', 'Server', 'Comment', 'Workgroup', 'Master', 'Verify', 'able', 'login', 'using', 'administrator', 'username', 'password', 'usrlocalsambabinsmbclient', 'localhostnetlogon', 'Uadministrator', 'c', 'ls', 'Enter', 'administrator', 'password', 'Domain', 'EXAMPLE', 'OS', 'Windows', 'Server', 'Samba', 'D', 'Fri', 'Feb', 'D', 'Fri', 'Feb', 'blocks', 'size', 'blocks', 'available', 'Verify', 'Domains', 'Now', 'let', 'us', 'check', 'domain', 'functioning', 'expected', 'Check', 'SRV', 'A', 'record', 'shown', 'host', 'SRV', 'ldaptcpexamplecom', 'ldaptcpexamplecom', 'SRV', 'record', 'tgsexamplecom', 'host', 'SRV', 'kerberosudpexamplecom', 'kerberosudpexamplecom', 'SRV', 'record', 'tgsexamplecom', 'host', 'A', 'tgsexamplecom', 'tgsexamplecom', 'address', 'Use', 'sambatool', 'command', 'verify', 'realm', 'name', 'shown', 'usrlocalsambabinsambatool', 'testparm', 'suppressprompt', 'grep', 'realm', 'realm', 'EXAMPLECOM', 'Configure', 'Kerberos', 'Copy', 'sample', 'file', 'etc', 'directory', 'cp', 'Set', 'defaultrealm', 'domain', 'name', 'In', 'case', 'set', 'examplecom', 'cat', 'libdefaults', 'defaultrealm', 'EXAMPLECOM', 'dnslookuprealm', 'false', 'dnslookupkdc', 'true', 'Use', 'kinit', 'command', 'make', 'sure', 'Kerberos', 'setup', 'properly', 'shown', 'kinit', 'administrator', 'EXAMPLECOM', 'Password', 'administrator', 'EXAMPLECOM', 'Warning', 'Your', 'password', 'expire', 'days', 'Fri', 'Apr', 'Finally', 'use', 'Windows', 'remote', 'administrator', 'tool', 'connect', 'Samba', 'server', 'use', 'domain', 'controller', 'If', 'face', 'issues', 'process', 'make', 'sure', 'bring', 'system', 'uptodate', 'updating', 'packages', 'You', 'also', 'disable', 'SELinux', 'temporarily', 'review', 'auditlog', 'SELinux', 'related', 'error', 'messages', 'Also', 'make', 'sure', 'IPTables', 'rules', 'blocking', 'ports', 'required', 'Samba', 'communicate', 'servers'])
+    g = Graph(['Samba', 'used', 'sysadmin', 'overcome', 'problem', 'interoperability', 'mixed', 'environment', 'Linux', 'Windows', 'It', 'provides', 'common', 'platform', 'Windows', 'Linux', 'common', 'sharing', 'space', 'Domain', 'controller', 'service', 'used', 'centralized', 'administration', 'users', 'groups', 'objects', 'network', 'This', 'service', 'enables', 'us', 'manage', 'authenticate', 'secure', 'users', 'login', 'related', 'data', 'This', 'tutorial', 'explains', 'configure', 'Samba', 'Linux', 'primary', 'domain', 'controller', 'Setup', 'Proper', 'Host', 'Name', 'Make', 'sure', 'setup', 'appropriate', 'hostname', 'static', 'ip', 'If', 'using', 'internal', 'ipaddress', 'like', 'access', 'internet', 'setup', 'appropriate', 'NAT', 'rules', 'firewall', 'In', 'tutorial', 'use', 'tgsexamplecom', 'hostname', 'vi', 'etcsysconfignetwork', 'HOSTNAMEtgsexamplecom', 'Make', 'sure', 'appropriate', 'static', 'ipaddress', 'setup', 'file', 'vi', 'Also', 'assign', 'gateway', 'dns', 'accordingly', 'etcsysconfignetwork', 'etcresolvconf', 'file', 'Verify', 'etchosts', 'file', 'entry', 'similar', 'following', 'vi', 'etchosts', 'tgsexamplecom', 'tgs', 'Also', 'make', 'sure', 'NTP', 'service', 'setup', 'running', 'properly', 'server', 'Install', 'Samba', 'Source', 'On', 'CentOS', 'default', 'samba', 'packages', 'installed', 'minimal', 'installation', 'type', 'First', 'install', 'following', 'dependent', 'packages', 'yum', 'install', 'glibc', 'glibcdevel', 'gcc', 'python', 'libacldevel', 'gitcore', 'openldapdevel', 'Next', 'download', 'samba', 'source', 'shown', 'git', 'clone', 'git', 'gitsambaorgsambagit', 'sambaserver', 'The', 'files', 'downloaded', 'sambaserver', 'directory', 'Install', 'samba', 'server', 'shown', 'cd', 'sambaserver', 'configure', 'enabledebug', 'enableselftest', 'make', 'make', 'install', 'Samba', 'installed', 'default', 'location', 'usrlocalsambabin', 'You', 'see', 'several', 'samba', 'client', 'utilities', 'installed', 'directory', 'cd', 'usrlocalsambabin', 'ls', 'cifsdd', 'ldbsearch', 'ntdbrestore', 'regshell', 'smbcquotas', 'tdbbackup', 'dbwraptool', 'locktest', 'ntdbtool', 'regtree', 'smbget', 'tdbdump', 'eventlogadm', 'masktest', 'ntlmauth', 'rpcclient', 'smbpasswd', 'tdbrestore', 'gentest', 'ndrdump', 'sambatool', 'smbspool', 'tdbtool', 'ldbadd', 'net', 'pdbedit', 'sharesec', 'smbstatus', 'testparm', 'ldbdel', 'nmblookup', 'pidl', 'smbcacls', 'smbtar', 'wbinfo', 'ldbedit', 'profiles', 'smbclient', 'smbtautil', 'ldbmodify', 'ntdbbackup', 'regdiff', 'smbtorture', 'ldbrename', 'ntdbdump', 'regpatch', 'smbcontrol', 'smbtree', 'Setup', 'Domain', 'Provision', 'To', 'start', 'domain', 'provision', 'execute', 'sambatool', 'shown', 'This', 'pickup', 'default', 'hostname', 'domain', 'name', 'configuration', 'files', 'usrlocalsambabinsambatool', 'domain', 'provision', 'Realm', 'EXAMPLECOM', 'Domain', 'EXAMPLE', 'Server', 'Role', 'dc', 'member', 'standalone', 'dc', 'DNS', 'backend', 'SAMBAINTERNAL', 'NONE', 'SAMBAINTERNAL', 'DNS', 'forwarder', 'IP', 'address', 'write', 'none', 'disable', 'forwarding', 'Administrator', 'password', 'Retype', 'password', 'Adding', 'DNS', 'accounts', 'Creating', 'CNMicrosoftDNS', 'CNSystem', 'DCexample', 'DCcom', 'Creating', 'DomainDnsZones', 'ForestDnsZones', 'partitions', 'Populating', 'DomainDnsZones', 'ForestDnsZones', 'partitions', 'Setting', 'samldb', 'rootDSE', 'marking', 'synchronized', 'Fixing', 'provision', 'GUIDs', 'A', 'Kerberos', 'configuration', 'suitable', 'Samba', 'generated', 'Once', 'files', 'installed', 'server', 'ready', 'use', 'Server', 'Role', 'active', 'directory', 'domain', 'controller', 'Hostname', 'tgs', 'NetBIOS', 'Domain', 'EXAMPLE', 'DNS', 'Domain', 'examplecom', 'DOMAIN', 'SID', 'Start', 'Samba', 'Service', 'Start', 'samba', 'service', 'shown', 'usrlocalsambasbinsamba', 'Add', 'following', 'entry', 'rclocal', 'file', 'make', 'sure', 'samba', 'service', 'starts', 'automatically', 'system', 'startup', 'echo', 'usrlocalsambasbinsamba', 'etcrcdrclocal', 'cat', 'etcrcdrclocal', 'touch', 'varlocksubsyslocal', 'usrlocalsambasbinsamba', 'Check', 'Samba', 'Version', 'YOu', 'verify', 'samba', 'version', 'using', 'samba', 'smbclient', 'command', 'shown', 'usrlocalsambasbinsamba', 'V', 'Version', 'usrlocalsambabinsmbclient', 'V', 'Version', 'The', 'following', 'command', 'display', 'Samba', 'shares', 'currently', 'available', 'usrlocalsambabinsmbclient', 'L', 'localhost', 'U', 'Domain', 'EXAMPLE', 'OS', 'Windows', 'Server', 'Samba', 'Sharename', 'Type', 'Comment', 'netlogon', 'Disk', 'sysvol', 'Disk', 'IPC', 'IPC', 'IPC', 'Service', 'Samba', 'Domain', 'EXAMPLE', 'OS', 'Windows', 'Server', 'Samba', 'Server', 'Comment', 'Workgroup', 'Master', 'Verify', 'able', 'login', 'using', 'administrator', 'username', 'password', 'usrlocalsambabinsmbclient', 'localhostnetlogon', 'Uadministrator', 'c', 'ls', 'Enter', 'administrator', 'password', 'Domain', 'EXAMPLE', 'OS', 'Windows', 'Server', 'Samba', 'D', 'Fri', 'Feb', 'D', 'Fri', 'Feb', 'blocks', 'size', 'blocks', 'available', 'Verify', 'Domains', 'Now', 'let', 'us', 'check', 'domain', 'functioning', 'expected', 'Check', 'SRV', 'A', 'record', 'shown', 'host', 'SRV', 'ldaptcpexamplecom', 'ldaptcpexamplecom', 'SRV', 'record', 'tgsexamplecom', 'host', 'SRV', 'kerberosudpexamplecom', 'kerberosudpexamplecom', 'SRV', 'record', 'tgsexamplecom', 'host', 'A', 'tgsexamplecom', 'tgsexamplecom', 'address', 'Use', 'sambatool', 'command', 'verify', 'realm', 'name', 'shown', 'usrlocalsambabinsambatool', 'testparm', 'suppressprompt', 'grep', 'realm', 'realm', 'EXAMPLECOM', 'Configure', 'Kerberos', 'Copy', 'sample', 'file', 'etc', 'directory', 'cp', 'Set', 'defaultrealm', 'domain', 'name', 'In', 'case', 'set', 'examplecom', 'cat', 'libdefaults', 'defaultrealm', 'EXAMPLECOM', 'dnslookuprealm', 'false', 'dnslookupkdc', 'true', 'Use', 'kinit', 'command', 'make', 'sure', 'Kerberos', 'setup', 'properly', 'shown', 'kinit', 'administrator', 'EXAMPLECOM', 'Password', 'administrator', 'EXAMPLECOM', 'Warning', 'Your', 'password', 'expire', 'days', 'Fri', 'Apr', 'Finally', 'use', 'Windows', 'remote', 'administrator', 'tool', 'connect', 'Samba', 'server', 'use', 'domain', 'controller', 'If', 'face', 'issues', 'process', 'make', 'sure', 'bring', 'system', 'uptodate', 'updating', 'packages', 'You', 'also', 'disable', 'SELinux', 'temporarily', 'review', 'auditlog', 'SELinux', 'related', 'error', 'messages', 'Also', 'make', 'sure', 'IPTables', 'rules', 'blocking', 'ports', 'required', 'Samba', 'communicate', 'servers'])
     result = list()
     cProfile.run('result=g.getAnnotation(5)')
     print("\n")
