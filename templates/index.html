@@ -7,60 +7,49 @@
 	<script src ="https://code.jquery.com/jquery-migrate-3.3.2.js"></script>
 
 	<style>
-        #result
+		#top
         {
-            background-color: deepskyblue;
-			text-align: left;
+            background-color: rgb(221, 247, 255);
+			text-align: center;
         }
 
     </style>
 	<script>
 		$(document).ready(function()
 		{
-			$("#btnAccept").on("click", function()
+			$("#btnInp").on("click", function()
 			{
-					let j = {longString:$('#longString').val()};
-					let d = JSON.stringify(j);
+				document.getElementById('inp').submit();
+				setInterval(function()
+				{
 					$.ajax({
-						type: 'POST',
-						contentType: 'application/json',
-						data: d,
-						dataType: 'json',
-						url: '/start',
-						success: function (e)
-						{
-							console.log(e);
-						},
-						error: function(error)
-						{
-							console.log(error);
-						}
-					});
-			})
-
-			$("#btnResult").on("click", function()
-			{
-					$.ajax({
-						url: "/res",
+						url: "/statusJsonOutput",
 						type: "POST",
 						dataType: "json",
 						contentType: "application/json",
 						success: function(resultData){
-							$(result).html(resultData.s);
-						},
-						error: function(jqXHR, textStatus, errorThrown) {
-							alert("업로드 에러\ncode : " + jqXHR.status + "\nerror message : " + jqXHR.responseText);
+							$("#status").html(resultData.s);
 						}
-					});
+					});    
+				}, 1000);
 			})
 		});
 	</script>
 </head>
 
 <body>
-    <textarea id="longString" name="longString" rows="30" cols="250">cat</textarea><br>
-	<button id="btnAccept">전달</button>
-	<button id="btnResult">답변</button>
-	<div id="result"></div>
+	<div id = "top">
+		<div id = "title">위키피케이션 입력</div>
+		<form action="/result" method="post" id="inp">
+			<div>유튜브 데스크탑 버전 URL</div>
+			<input type="text" name="url" value="https://www.youtube.com/watch?v=IbkhzcgznDA">
+			<div>나눌 초</div>
+			<input type="text" name="sec" value="300.0">
+			<br><a id="btnInp" href="#"> 전송 </a>
+		</form>
+	</div>
+	<div id = "res">
+		<div id = "status"></div>
+	</div>
 </body>
 </html>
