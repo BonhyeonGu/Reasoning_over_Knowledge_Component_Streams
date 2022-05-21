@@ -7,11 +7,23 @@
 	<script src ="https://code.jquery.com/jquery-migrate-3.3.2.js"></script>
 
 	<style>
-		#res
+		#title
         {
             background-color: rgb(221, 247, 255);
 			text-align: center;
+			font-size:1.5em;
         }
+
+		#res
+        {
+            background-color: rgb(221, 247, 255);
+			text-align: left;
+        }
+
+		body
+		{
+			
+		}
 
     </style>
 	<script>
@@ -19,7 +31,7 @@
 </head>
 
 <body>
-	결과 보고서
+	<div id = "title">결과 보고서</div>
 	<div id = "res">
 		{% for i in resList %}
 		<p>

@@ -12,6 +12,17 @@
             background-color: rgb(221, 247, 255);
 			text-align: center;
         }
+		#title
+        {
+            background-color: rgb(210, 246, 255);
+			font-size:1.5em;
+        }
+		#status
+        {
+            background-color: rgb(5, 0, 12);
+			font-size:0.8em;
+			color: rgb(255, 255, 255);
+        }
 
     </style>
 	<script>
@@ -42,14 +53,12 @@
 		<div id = "title">위키피케이션 입력</div>
 		<form action="/result" method="post" id="inp">
 			<div>유튜브 데스크탑 버전 URL</div>
-			<input type="text" name="url" value="https://www.youtube.com/watch?v=IbkhzcgznDA">
-			<div>나눌 초</div>
-			<input type="text" name="sec" value="300.0">
+			<input type="text" name="url" value="https://www.youtube.com/watch?v=IbkhzcgznDA" style="width:600px;height:30px;font-size:20px;text-align:center;">
+			<br><br><div>타임파트 초(실수)&nbsp;&nbsp;&nbsp;&nbsp;키워드 개수(정수)</div>
+			<input type="text" name="sec" value="300.0" style="width:100px;height:30px;font-size:20px;text-align:center;"> &nbsp; &nbsp; &nbsp; <input type="text" name="keywordSize" value="5" style="width:100px;height:30px;font-size:20px;text-align:center;">
 			<br><a id="btnInp" href="#"> 전송 </a>
 		</form>
 	</div>
-	<div id = "res">
-		<div id = "status"></div>
-	</div>
+	<div id = "status"></div>
 </body>
 </html>
