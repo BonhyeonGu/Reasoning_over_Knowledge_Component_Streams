@@ -5,7 +5,7 @@ import cProfile
 from operator import itemgetter
 from math import log2
 import pickle
-
+import visualizeGraph as vg
 from collections import defaultdict, Counter
 
 from fileIO import FileIO
@@ -60,7 +60,7 @@ class Graph:
         self.MAXENTROPHY = 3.0
         self.IDX = 0
         #---------------------------------------------------
-        self.FileIO = FileIO("D:\\Non\\")#경로 넣을것!
+        self.FileIO = FileIO()#경로 넣을것!
         #---------------------------------------------------
         
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -306,7 +306,7 @@ class Graph:
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
         print(result_list)
-
+        vg.visualize(mentionVertex,conceptVertex)
         #PR0 계산
         print("calcPR0")
         timeStart = time.time()
