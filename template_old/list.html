@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>게시판</title>
+	<script src ="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src ="https://code.jquery.com/jquery-migrate-3.3.2.js"></script>
+	<script>
+        $(document).ready(function(){
+            $('#wantStart').on("click", function()
+            {
+				$.ajax({
+					url: "/want/a",
+					type: "post",
+					dataType: "json",
+					contentType: "application/json",
+					success: function(resultData) {
+						alert(resultData.name + " " + resultData.uno)
+					},
+					error: function(jqXHR, textStatus, errorThrown) {
+						// 에러 로그는 아래처럼 확인해볼 수 있다. 
+						alert("업로드 에러\ncode : " + jqXHR.status + "\nerror message : " + jqXHR.responseText);
+					}
+				});
+            });
+        });
+    </script>
+
+</head>
+<body>
+	<a href= "{{url_for('logout')}}">로그아웃</a><br>
+	접속자 : {{uno}}
+	
+	<button id = "wantStart">ajax 요청</button>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>메인 페이지</title>
+	<script src ="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+	<script src ="https://code.jquery.com/jquery-migrate-3.3.2.js"></script>
+
+	<style>
+        #result
+        {
+            background-color: deepskyblue;
+			text-align: left;
+        }
+
+    </style>
+	<script>
+		$(document).ready(function()
+		{
+			$("#btnAccept").on("click", function()
+			{
+					let j = {longString:$('#longString').val()};
+					let d = JSON.stringify(j);
+					$.ajax({
+						type: 'POST',
+						contentType: 'application/json',
+						data: d,
+						dataType: 'json',
+						url: '/start',
+						success: function (e)
+						{
+							console.log(e);
+						},
+						error: function(error)
+						{
+							console.log(error);
+						}
+					});
+			})
+
+			$("#btnResult").on("click", function()
+			{
+					$.ajax({
+						url: "/res",
+						type: "POST",
+						dataType: "json",
+						contentType: "application/json",
+						success: function(resultData){
+							$(result).html(resultData.s);
+						},
+						error: function(jqXHR, textStatus, errorThrown) {
+							alert("업로드 에러\ncode : " + jqXHR.status + "\nerror message : " + jqXHR.responseText);
+						}
+					});
+			})
+		});
+	</script>
+</head>
+
+<body>
+	<div id = "all">
+		<textarea id="longString" name="longString" rows="1" cols="50">cat</textarea><br>
+		<button id="btnAccept">전달</button>
+		<button id="btnResult">답변</button>
+		<div id="result"></div>
+	</div>
+</body>
+</html>
