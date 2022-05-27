@@ -33,7 +33,7 @@ def result():
 	queueSize = sett.qsize()
 	c = 1
 	resultJsonUpdate("프로세스 시작됨, 프로세스 진행중에 입력하지 마십시오, %d 개의 타임파트를 인식했습니다."%(queueSize))
-	while queueSize != 0:
+	while sett.qsize() != 0:
 		subInSec = sett.get()
 		#---------------------------------------------------------
 		inp = wiki.preProcess(subInSec)
