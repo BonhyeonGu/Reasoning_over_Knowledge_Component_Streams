@@ -19,6 +19,7 @@ def index():
 def result():
 	global nowStatusStr
 	global nowStatusSec
+	tokenSum = 0
 	nowStatusStr = ""
 	nowStatusSec = 0
 #--------------------------------------------------------------------------------------
@@ -29,12 +30,14 @@ def result():
 	wiki = WikificationTest()
 	ret = []    
 	sett:queue.Queue = wiki.urlToSplitQueue(splitSec, url)
+	queueSize = sett.qsize()
 	c = 1
-	resultJsonUpdate("프로세스 시작됨, 프로세스 진행중에 입력하지 마십시오, %d 개의 타임파트를 인식했습니다."%(sett.qsize()))
-	while sett.qsize() != 0:
+	resultJsonUpdate("프로세스 시작됨, 프로세스 진행중에 입력하지 마십시오, %d 개의 타임파트를 인식했습니다."%(queueSize))
+	while queueSize != 0:
 		subInSec = sett.get()
 		#---------------------------------------------------------
 		inp = wiki.preProcess(subInSec)
+		tokenSum += len(inp)
 		#ret.append(inp)
 		resultJsonUpdate("<br>%d번째 타임파트(%d분 ~ %d분), %d개의 단어를 인식했습니다. 시작" %(c, (splitSec * c - splitSec) / 60, (splitSec * c) / 60, len(inp)))
 		#---------------------------------------------------------
@@ -52,14 +55,15 @@ def result():
 		c += 1
 		resultJsonUpdate("<br>")
 #--------------------------------------------------------------------------------------
-	return render_template('result.html', resList = ret)
+	inputValues = [tokenSum, splitSec, queueSize, keywordSize, nowStatusSec]
+	return render_template('result.html', resList = ret, iv = inputValues)
 #--------------------------------------------------------------------------------------
 @app.route("/statusJsonOutput", methods=['POST'])
 def statusJsonOutput():
 	global nowStatusStr
 	global nowStatusSec
 	nowStatusSec += 1
-	test_data = {"s" : nowStatusStr+"<br>%d SEC"%(nowStatusSec)}
+	test_data = {"s" : nowStatusStr+"<p style=\"text-align: center;\">%d SEC</p>"%(nowStatusSec)}
 	return jsonify(test_data)
 
 if __name__ == "__main__":
