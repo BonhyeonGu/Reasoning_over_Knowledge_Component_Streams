@@ -43,8 +43,8 @@ class WikificationTest:
 
     def urlToSplitQueue(self, splitSec, url:str):
         ret = queue.Queue()
-
-        tmp = url.split('?v=')[1]
+        
+        tmp = url.split('v=')[1]
         ytid = ''
         for char in tmp:
             if char == '&':
