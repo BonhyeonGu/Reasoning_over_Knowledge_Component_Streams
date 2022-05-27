@@ -65,11 +65,11 @@ class Graph:
         
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
     def makeAllNode(self, mentionVertex:list, conceptVertex:list):
-        anchorTextRange = self.FileIO.ankerTextToRangeSingle(self.mentionList)
+        anchorTextRange = self.FileIO.anchorTextToRangeSingle(self.mentionList)
         anchorTextRange = tuple(anchorTextRange)
         #없는 텍스트인지 확인해봐야함
 
-        TargetID = self.FileIO.callListAnkerTargetID()
+        TargetID = self.FileIO.callListAnchorTargetID()
         TargetID = tuple(TargetID)
         PageID = self.FileIO.callListNowPageID()
         PageID = tuple(PageID)

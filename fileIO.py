@@ -21,8 +21,8 @@ class FileIO():
 
         self.nameIDToTitle = local + 'ComIDToTitle.npy'
         self.nameTitleToID = local + 'ComTittleToID.pkl'
-        self.nameAnkerText = local + 'Arr1.pkl'
-        self.nameAnkerTargetID = local + 'Arr2.pkl'
+        self.nameAnchorText = local + 'Arr1.pkl'
+        self.nameAnchorTargetID = local + 'Arr2.pkl'
         self.nameNowPageID = local +'Arr3.pkl'
         self.nameBack = local + 'backlinks/'
         self.namePr0den = local + 'pr0dens/'
@@ -60,13 +60,13 @@ class FileIO():
             ret = pic.load(f)
         return ret
 
-    def getPR0den(self, ankerText):
-        fileName = self.namePr0den + self.nameEncode(ankerText)
+    def getPR0den(self, anchorText):
+        fileName = self.namePr0den + self.nameEncode(anchorText)
         try:
             with open(fileName, "r") as f:
                 return int(f.read())
         except:
-            pr0den = self.craw.getPR0den(ankerText)
+            pr0den = self.craw.getPR0den(anchorText)
             with open(fileName, "w") as f:
                 f.write(str(pr0den))
             return pr0den
@@ -89,7 +89,7 @@ class FileIO():
     
     #-------------------------------------------------------------------
 
-    def ankerTextToRangeSub(self, inps:list, arr:list, ret:dict):
+    def anchorTextToRangeSub(self, inps:list, arr:list, ret:dict):
         for inp in inps:
             s = 0
             e = len(arr)
@@ -111,14 +111,14 @@ class FileIO():
                 else:
                     s = m
     
-    def ankerTextToRange(self, inps:list):
-        with open(self.nameAnkerText, 'rb') as f:
+    def anchorTextToRange(self, inps:list):
+        with open(self.nameAnchorText, 'rb') as f:
             arr = pic.load(f)
         inpss = Util.splitList(inps, self.SPLIT_PROCESS)
         pros = []
         ret = self.m.dict()
         for inps in inpss:
-            pro = Process(target = self.ankerTextToRangeSub, args=(inps, arr, ret, ))
+            pro = Process(target = self.anchorTextToRangeSub, args=(inps, arr, ret, ))
             pro.daemon = True
             pro.start()
             pros.append(pro)
@@ -130,8 +130,8 @@ class FileIO():
             pro.join()
         return ret
 
-    def ankerTextToRangeSingle(self, inps:list):
-        with open(self.nameAnkerText, 'rb') as f:
+    def anchorTextToRangeSingle(self, inps:list):
+        with open(self.nameAnchorText, 'rb') as f:
             arr = pic.load(f)
 
         ret = []
@@ -165,8 +165,8 @@ class FileIO():
         return ret
     #-------------------------------------------------------------------
 
-    def callListAnkerTargetID(self):
-        with open(self.nameAnkerTargetID, 'rb') as f:
+    def callListAnchorTargetID(self):
+        with open(self.nameAnchorTargetID, 'rb') as f:
             ret = pic.load(f)
         return ret
 
