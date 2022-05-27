@@ -9,17 +9,19 @@
 	<style>
 		#top
         {
-            background-color: rgb(221, 247, 255);
+            background-color: rgb(11, 0, 26);
 			text-align: center;
+			color: rgb(255, 255, 255);
         }
 		#title
         {
             background-color: rgb(210, 246, 255);
-			font-size:1.5em;
+			text-align: center;
+			font-size:2.0em;
         }
 		#status
         {
-            background-color: rgb(5, 0, 12);
+            background-color: rgb(11, 0, 26);
 			font-size:0.8em;
 			color: rgb(255, 255, 255);
         }
@@ -49,14 +51,14 @@
 </head>
 
 <body>
+	<div id = "title">위키피케이션 입력</div>
 	<div id = "top">
-		<div id = "title">위키피케이션 입력</div>
 		<form action="/result" method="post" id="inp">
 			<div>유튜브 데스크탑 버전 URL</div>
 			<input type="text" name="url" value="https://www.youtube.com/watch?v=IbkhzcgznDA" style="width:600px;height:30px;font-size:20px;text-align:center;">
 			<br><br><div>타임파트 초(실수)&nbsp;&nbsp;&nbsp;&nbsp;키워드 개수(정수)</div>
 			<input type="text" name="sec" value="300.0" style="width:100px;height:30px;font-size:20px;text-align:center;"> &nbsp; &nbsp; &nbsp; <input type="text" name="keywordSize" value="5" style="width:100px;height:30px;font-size:20px;text-align:center;">
-			<br><a id="btnInp" href="#"> 전송 </a>
+			<br><br><button id="btnInp" style="width:200px;height:50px;font-size:30px;">전송</button><br><br>_
 		</form>
 	</div>
 	<div id = "status"></div>
