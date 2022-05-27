@@ -23,7 +23,6 @@
         {
             background-color: rgb(238, 238, 238);
 			text-align: left;
-			font-size:1.5em;
         }
 
 		body
@@ -46,15 +45,13 @@
 	<br><br>
 	<div id = "res">
 		{% for i in resList %}
-		
+		<div style="font-size:1.1em;">PART : {{loop.index}}<br></div>
 		{% if loop.index % 2 == 0 %}
-		<div style="background-color: rgb(255, 255, 255);">
-			{{(iv[1] * loop.index - splitSec) / 60}}분 부터 {{(iv[1] * loop.index) / 60}}분 까지<br>
+		<div style="background-color: rgb(255, 255, 255);font-size:1.3em;">
 			{% for j in i %}&nbsp;&nbsp;{{j}}{% endfor %}
 		</div>
 		{% else %}
-		<div style="background-color: rgb(223, 223, 223);">
-			{{(iv[1] * loop.index - splitSec) / 60}}분 부터 {{(iv[1] * loop.index) / 60}}분 까지<br>
+		<div style="background-color: rgb(223, 223, 223);font-size:1.3em;">
 			{% for j in i %}&nbsp;&nbsp;{{j}}{% endfor %}
 		</div>
 		{% endif %}
