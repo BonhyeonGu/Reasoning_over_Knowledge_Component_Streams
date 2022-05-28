@@ -5,6 +5,7 @@ import cProfile
 from operator import itemgetter
 from math import log2
 import pickle
+from xmlrpc.client import boolean
 import visualizeGraph as vg
 from collections import defaultdict, Counter
 
@@ -64,7 +65,7 @@ class Graph:
         #---------------------------------------------------
         
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
-    def makeAllNode(self, mentionVertex:list, conceptVertex:list):
+    def makeAllNode(self, mentionVertex:list, conceptVertex:list, ignoreRepeatedWord:bool):
         anchorTextRange = self.FileIO.anchorTextToRangeSingle(self.mentionList)
         anchorTextRange = tuple(anchorTextRange)
         #없는 텍스트인지 확인해봐야함
@@ -87,12 +88,20 @@ class Graph:
         NameEncoder = self.FileIO.nameEncode
         GetPR0Den = self.FileIO.getPR0den
         
+        #같은 단어 들어오는지 확인하기위한 변수
+        mentionChecker = dict()
         for mention in li:
             i+=1
             #앵커텍스트로서 존재하지 않는 단어는 제외
             if anchorTextRange[i] == -1:
                 continue
-
+            #같은 단어 들어오면 무시
+            if ignoreRepeatedWord == True:
+                try:
+                    mentionChecker[mention]+=1
+                    continue
+                except KeyError:
+                    mentionChecker[mention] = 1
             #n = 전체 앵커텍스트 개수
             n = anchorTextRange[i][1]-anchorTextRange[i][0]
             
@@ -286,13 +295,13 @@ class Graph:
         supportNode = sorted(supportNode, key = lambda node: node.PR, reverse=True)
         return supportNode
 
-    def getAnnotation(self, numberOfAnnotation:int):#text는 mention들의 리스트, numberOfAnnotation는 결과 단어 몇개 출력할지 정하는 변수
+    def getAnnotation(self, numberOfAnnotation:int, ignoreRepeatedWord:bool = False):#text는 mention들의 리스트, numberOfAnnotation는 결과 단어 몇개 출력할지 정하는 변수
         #그래프 노드, 멘션노드에서 컨셉노드로 향하는 엣지 생성
         print("makeAllNode")
         timeStart = time.time()
         mentionVertex=[]#멘션 노드 저장장소
         conceptVertex=[]#컨셉 노드 저장장소
-        self.makeAllNode(mentionVertex, conceptVertex)
+        self.makeAllNode(mentionVertex, conceptVertex, ignoreRepeatedWord)
         timeEnd = time.time()
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
@@ -306,7 +315,7 @@ class Graph:
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
         print(result_list)
-        vg.visualize(mentionVertex,conceptVertex)
+        #vg.visualize(mentionVertex,conceptVertex)
         #PR0 계산
         print("calcPR0")
         timeStart = time.time()

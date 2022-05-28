@@ -42,7 +42,7 @@ def result():
 		resultJsonUpdate("<br>%d번째 타임파트(%d분 ~ %d분), %d개의 단어를 인식했습니다. 시작" %(c, (splitSec * c - splitSec) / 60, (splitSec * c) / 60, len(inp)))
 		#---------------------------------------------------------
 		g = wiki.graphProcess(inp)
-		result = g.getAnnotation(keywordSize)
+		result = g.getAnnotation(keywordSize, True)
 		#---------------------------------------------------------
 		resultJsonUpdate("~완료")
 		#---------------------------------------------------------
