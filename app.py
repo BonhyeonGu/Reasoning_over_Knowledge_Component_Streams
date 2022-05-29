@@ -29,9 +29,9 @@ def result():
 	keywordSize = int(request.form['keywordSize'])
 	hit = request.form['hit']
 	if hit == 'on':
-		hit = False
+		hitBool = False
 	else:
-		hit = True
+		hitBool = True
 #--------------------------------------------------------------------------------------
 	wiki = WikificationTest()
 	ret = []    
@@ -48,7 +48,7 @@ def result():
 		resultJsonUpdate("<br>%d번째 타임파트(%d분 ~ %d분), %d개의 단어를 인식했습니다. 시작" %(c, (splitSec * c - splitSec) / 60, (splitSec * c) / 60, len(inp)))
 		#---------------------------------------------------------
 		g = wiki.graphProcess(inp)
-		result = g.getAnnotation(keywordSize, hit)
+		result = g.getAnnotation(keywordSize, hitBool)
 		#---------------------------------------------------------
 		resultJsonUpdate("~완료")
 		#---------------------------------------------------------
@@ -61,7 +61,7 @@ def result():
 		c += 1
 		resultJsonUpdate("<br>")
 #--------------------------------------------------------------------------------------
-	inputValues = [tokenSum, splitSec, queueSize, keywordSize, nowStatusSec]
+	inputValues = [tokenSum, splitSec, queueSize, keywordSize, nowStatusSec, hit]
 	return render_template('result.html', resList = ret, iv = inputValues)
 #--------------------------------------------------------------------------------------
 @app.route("/statusJsonOutput", methods=['POST'])
