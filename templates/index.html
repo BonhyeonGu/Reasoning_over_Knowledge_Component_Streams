@@ -56,8 +56,10 @@
 		<form action="/result" method="post" id="inp">
 			<div>유튜브 데스크탑 버전 URL</div>
 			<input type="text" name="url" value="https://www.youtube.com/watch?v=IbkhzcgznDA" style="width:600px;height:30px;font-size:20px;text-align:center;">
-			<br><br><div>타임파트 초(실수)&nbsp;&nbsp;&nbsp;&nbsp;키워드 개수(정수)</div>
-			<input type="text" name="sec" value="300.0" style="width:100px;height:30px;font-size:20px;text-align:center;"> &nbsp; &nbsp; &nbsp; <input type="text" name="keywordSize" value="5" style="width:100px;height:30px;font-size:20px;text-align:center;">
+			<br><br><div>타임파트 초(실수)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;키워드 개수(정수)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;히트 관여(on/off)</div>
+			<input type="text" name="sec" value="300.0" style="width:100px;height:30px;font-size:20px;text-align:center;">
+			&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="keywordSize" value="5" style="width:100px;height:30px;font-size:20px;text-align:center;">
+			&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;<input type="radio" name="hit" value="on">&nbsp;&nbsp;<input type="radio" name="hit" value="off" checked="checked">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 			<br><br><button id="btnInp" style="width:200px;height:50px;font-size:30px;">전송</button><br><br>_
 		</form>
 	</div>

@@ -1,4 +1,5 @@
 #--------------------------------------------------------------------------------#flask
+from re import T
 from flask import Flask, render_template, request, jsonify, redirect, url_for 
 #--------------------------------------------------------------------------------------
 from wikificationTest import WikificationTest
@@ -26,6 +27,11 @@ def result():
 	url = request.form['url']
 	splitSec = float(request.form['sec'])
 	keywordSize = int(request.form['keywordSize'])
+	hit = request.form['hit']
+	if hit == 'on':
+		hit = False
+	else:
+		hit = True
 #--------------------------------------------------------------------------------------
 	wiki = WikificationTest()
 	ret = []    
@@ -42,7 +48,7 @@ def result():
 		resultJsonUpdate("<br>%d번째 타임파트(%d분 ~ %d분), %d개의 단어를 인식했습니다. 시작" %(c, (splitSec * c - splitSec) / 60, (splitSec * c) / 60, len(inp)))
 		#---------------------------------------------------------
 		g = wiki.graphProcess(inp)
-		result = g.getAnnotation(keywordSize, True)
+		result = g.getAnnotation(keywordSize, hit)
 		#---------------------------------------------------------
 		resultJsonUpdate("~완료")
 		#---------------------------------------------------------
