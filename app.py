@@ -12,6 +12,14 @@ nowStatusSec = -1
 def resultJsonUpdate(s:str):
 	global nowStatusStr
 	nowStatusStr += s
+
+def sameCount(a:list, b:list):
+	ret = 0
+	for i in a:
+		for j in b:
+			if i.name == j.name:
+				ret += 1
+	return ret
 #--------------------------------------------------------------------------------------
 @app.route("/")
 def index():
@@ -37,6 +45,10 @@ def result():
 	ret = []    
 	sett:queue.Queue = wiki.urlToSplitQueue(splitSec, url)
 	queueSize = sett.qsize()
+#--------------------------------------------------------------------------------------
+	sameCountSum = 0
+	frontResult = []
+#--------------------------------------------------------------------------------------
 	c = 1
 	resultJsonUpdate("프로세스 시작됨, 프로세스 진행중에 입력하지 마십시오, %d 개의 타임파트를 인식했습니다."%(queueSize))
 	while sett.qsize() != 0:
@@ -50,6 +62,10 @@ def result():
 		g = wiki.graphProcess(inp)
 		result = g.getAnnotation(keywordSize, hitBool)
 		#---------------------------------------------------------
+		if len(frontResult) != 0:
+			sameCountSum += sameCount(frontResult, result)
+		frontResult = result
+		#---------------------------------------------------------
 		resultJsonUpdate("~완료")
 		#---------------------------------------------------------
 		retTemp = []
@@ -61,7 +77,8 @@ def result():
 		c += 1
 		resultJsonUpdate("<br>")
 #--------------------------------------------------------------------------------------
-	inputValues = [tokenSum, splitSec, queueSize, keywordSize, nowStatusSec, hit]
+	nowStatusSec = 0
+	inputValues = [tokenSum, splitSec, queueSize, keywordSize, nowStatusSec, hit, sameCountSum]
 	return render_template('result.html', resList = ret, iv = inputValues)
 #--------------------------------------------------------------------------------------
 @app.route("/statusJsonOutput", methods=['POST'])
