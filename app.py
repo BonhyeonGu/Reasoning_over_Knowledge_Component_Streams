@@ -77,8 +77,9 @@ def result():
 		c += 1
 		resultJsonUpdate("<br>")
 #--------------------------------------------------------------------------------------
+	forward_sec = nowStatusSec
 	nowStatusSec = 0
-	inputValues = [tokenSum, splitSec, queueSize, keywordSize, nowStatusSec, hit, sameCountSum]
+	inputValues = [tokenSum, splitSec, queueSize, keywordSize, forward_sec, hit, sameCountSum]
 	return render_template('result.html', resList = ret, iv = inputValues)
 #--------------------------------------------------------------------------------------
 @app.route("/statusJsonOutput", methods=['POST'])
