@@ -5,7 +5,6 @@
 	<title>메인 페이지</title>
 	<script src ="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src ="https://code.jquery.com/jquery-migrate-3.3.2.js"></script>
-
 	<style>
 		#top
         {
@@ -25,6 +24,10 @@
 			font-size:0.8em;
 			color: rgb(255, 255, 255);
         }
+		#player
+        {
+            text-align: center;
+        }
 
     </style>
 	<script>
@@ -32,7 +35,8 @@
 		{
 			$("#btnInp").on("click", function()
 			{
-				document.getElementById('inp').submit();
+				src = "http://www.youtube.com/embed/" + $("#url").val().split("v=")[1] + "?enablejsapi=1&origin=http://example.com";
+				$("#player").attr("src", src);
 				setInterval(function()
 				{
 					$.ajax({
@@ -45,7 +49,7 @@
 						}
 					});    
 				}, 1000);
-			})
+			});
 		});
 	</script>
 </head>
@@ -55,12 +59,13 @@
 	<div id = "top">
 		<form action="/result" method="post" id="inp">
 			<div>유튜브 데스크탑 버전 URL</div>
-			<input type="text" name="url" value="https://www.youtube.com/watch?v=IbkhzcgznDA" style="width:600px;height:30px;font-size:20px;text-align:center;">
+			<input type="text" id="url" name="url" value="https://www.youtube.com/watch?v=IbkhzcgznDA" style="width:600px;height:30px;font-size:20px;text-align:center;">
 			<br><br><div>타임파트 초(실수)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;키워드 개수(정수)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;히트 관여(on/off)</div>
 			<input type="text" name="sec" value="300.0" style="width:100px;height:30px;font-size:20px;text-align:center;">
 			&nbsp; &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="text" name="keywordSize" value="5" style="width:100px;height:30px;font-size:20px;text-align:center;">
 			&nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&nbsp;<input type="radio" name="hit" value="on">&nbsp;&nbsp;<input type="radio" name="hit" value="off" checked="checked">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<br><br><button id="btnInp" style="width:200px;height:50px;font-size:30px;">전송</button><br><br>_
+			<br><br><button id="btnInp" style="width:200px;height:50px;font-size:30px;">전송</button><br><br>
+			<iframe id="player" type="text/html" width="640" height="360" src="" frameborder="0"></iframe>
 		</form>
 	</div>
 	<div id = "status"></div>
