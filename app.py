@@ -36,10 +36,15 @@ def result():
 	splitSec = float(request.form['sec'])
 	keywordSize = int(request.form['keywordSize'])
 	hit = request.form['hit']
-	if hit == 'on':
+	triple = request.form['triple']
+	if hit == 'on':#반대로 설계됨
 		hitBool = False
 	else:
 		hitBool = True
+	if triple == 'on':
+		tripleBool = True
+	else:
+		tripleBool = False
 #--------------------------------------------------------------------------------------
 	wiki = WikificationTest()
 	ret = []    
@@ -79,7 +84,7 @@ def result():
 #--------------------------------------------------------------------------------------
 	forward_sec = nowStatusSec
 	nowStatusSec = 0
-	inputValues = [tokenSum, splitSec, queueSize, keywordSize, forward_sec, hit, sameCountSum]
+	inputValues = [tokenSum, splitSec, queueSize, keywordSize, forward_sec, hit, sameCountSum, tripleBool]
 	return render_template('result.html', resList = ret, iv = inputValues)
 #--------------------------------------------------------------------------------------
 @app.route("/statusJsonOutput", methods=['POST'])

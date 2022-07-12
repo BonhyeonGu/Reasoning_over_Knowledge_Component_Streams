@@ -31,8 +31,6 @@
 		}
 
     </style>
-	<script>
-	</script>
 </head>
 
 <body>
@@ -48,7 +46,11 @@
 		<div style="font-size:1.1em;">PART : {{loop.index}}<br></div>
 		{% if loop.index % 2 == 0 %}
 		<div style="background-color: rgb(255, 255, 255);font-size:1.3em;">
-			{% for j in i %}&nbsp;&nbsp;{{j}}{% endfor %}
+			{% if loop.index % 2 == 0 %}
+				{{i}}
+			{% else %}
+				{% for j in i %}&nbsp;&nbsp;{{j}}{% endfor %}
+			{% endif %}
 		</div>
 		{% else %}
 		<div style="background-color: rgb(223, 223, 223);font-size:1.3em;">
