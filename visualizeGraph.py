@@ -1,4 +1,3 @@
-from turtle import color
 import networkx as nx
 import matplotlib.pyplot as plt
 from fileIO import FileIO
