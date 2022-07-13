@@ -24,12 +24,6 @@
             background-color: rgb(238, 238, 238);
 			text-align: left;
         }
-
-		body
-		{
-			
-		}
-
     </style>
 </head>
 
@@ -40,24 +34,27 @@
 		총 <strong>{{iv[0]}}</strong>개의 Token을 확보하여 <strong>{{iv[1]}}</strong> 초를 기준으로 분활한 <strong>{{iv[2]}}</strong> 개의 파트에 대해<br>
 		각각 <strong>{{iv[3]}}</strong>개의 KC를 생성했습니다. 동일한 문자반복(Hit)의 고려는 <strong>{{iv[5]}}</strong> 되었습니다. 파트간 겹치는 개수는 총<strong>{{iv[6]}}</strong>개 입니다.
 	</div>
+	<div style="text-align:center;"><iframe id="player" type="text/html" width="640" height="360" src="{{url}}" frameborder="0"></iframe></div>
 	<br><br>
 	<div id = "res">
-		{% for i in resList %}
-		<div style="font-size:1.1em;">PART : {{loop.index}}<br></div>
-		{% if loop.index % 2 == 0 %}
-		<div style="background-color: rgb(255, 255, 255);font-size:1.3em;">
-			{% if loop.index % 2 == 0 %}
-				{{i}}
-			{% else %}
-				{% for j in i %}&nbsp;&nbsp;{{j}}{% endfor %}
-			{% endif %}
-		</div>
+		{% if iv[7] %}
+			{% for i in range(ret1|length) %}
+				{% if loop.index % 2 == 0 %}
+				<div style="background-color: rgb(255, 255, 255);font-size:1.3em;">{{i}}---{{ret1[i]}}<a href="http://dbpedia.org/resource/{{ret2[i]}}">{{ret2[i]}}</a>{{ret3[i]}}</div>
+				{% else %}
+				<div style="background-color: rgb(223, 223, 223);font-size:1.3em;">{{i}}---{{ret1[i]}}<a href="http://dbpedia.org/resource/{{ret2[i]}}">{{ret2[i]}}</a>{{ret3[i]}}</div>
+				{% endif %}
+			{% endfor %}
 		{% else %}
-		<div style="background-color: rgb(223, 223, 223);font-size:1.3em;">
-			{% for j in i %}&nbsp;&nbsp;{{j}}{% endfor %}
-		</div>
+			{% for i in range(ret1|length) %}
+				<div style="font-size:1.1em;">PART : {{i}}<br></div>
+				{% if loop.index % 2 == 0 %}
+				<div style="background-color: rgb(255, 255, 255);font-size:1.3em;">{% for j in ret1[i] %}&nbsp;&nbsp;{{j}}{% endfor %}</div>
+				{% else %}
+				<div style="background-color: rgb(223, 223, 223);font-size:1.3em;">{% for j in ret1[i] %}&nbsp;&nbsp;{{j}}{% endfor %}</div>
+				{% endif %}
+			{% endfor %}
 		{% endif %}
-		{% endfor %}
 	</div>
 </body>
 </html>

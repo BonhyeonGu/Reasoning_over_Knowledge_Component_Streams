@@ -35,7 +35,12 @@
 		{
 			$("#btnInp").on("click", function()
 			{
-				src = "http://www.youtube.com/embed/" + $("#url").val().split("v=")[1] + "?enablejsapi=1&origin=http://example.com";
+				let url = $("#url").val().split("v=")[1]
+				if(url.includes("&")) 
+				{
+					url = url.split("&")[0];
+				}
+				src = "http://www.youtube.com/embed/" + url + "?enablejsapi=1&origin=http://example.com";
 				$("#player").attr("src", src);
 				setInterval(function()
 				{

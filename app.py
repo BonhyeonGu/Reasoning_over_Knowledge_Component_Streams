@@ -1,8 +1,12 @@
 #--------------------------------------------------------------------------------#flask
 from re import T
-from flask import Flask, render_template, request, jsonify, redirect, url_for 
+from flask import Flask, render_template, request, jsonify
+from matplotlib.pyplot import tripcolor
+from pyparsing import restOfLine
 #--------------------------------------------------------------------------------------
 from wikificationTest import WikificationTest
+from triple import Triple
+#--------------------------------------------------------------------------------------
 import queue
 #--------------------------------------------------------------------------------------
 app = Flask(__name__)
@@ -82,10 +86,25 @@ def result():
 		c += 1
 		resultJsonUpdate("<br>")
 #--------------------------------------------------------------------------------------
+	tmp = url.split('v=')[1]
+	ytid = ''
+	for char in tmp:
+		if char == '&':
+			break
+		ytid += char
+#--------------------------------------------------------------------------------------
 	forward_sec = nowStatusSec
 	nowStatusSec = 0
+	if tripleBool:
+		tri = Triple()
+		ret1, ret2, ret3 = tri.output(ret)
+		print(len(ret1))
+	else:
+		ret1 = ret
+		ret2 = []
+		ret3 = []
 	inputValues = [tokenSum, splitSec, queueSize, keywordSize, forward_sec, hit, sameCountSum, tripleBool]
-	return render_template('result.html', resList = ret, iv = inputValues)
+	return render_template('result.html', ret1=ret1, ret2=ret2, ret3=ret3, iv = inputValues, url="http://www.youtube.com/embed/" + ytid + "?enablejsapi=1&origin=http://example.com")
 #--------------------------------------------------------------------------------------
 @app.route("/statusJsonOutput", methods=['POST'])
 def statusJsonOutput():
