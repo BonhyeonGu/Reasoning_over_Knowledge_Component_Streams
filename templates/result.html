@@ -17,6 +17,7 @@
         {
             background-color: rgb(235, 250, 255);
 			text-align: center;
+			font-size:1.1em;
         }
 
 		#res
@@ -24,16 +25,18 @@
             background-color: rgb(238, 238, 238);
 			text-align: left;
         }
+		.about
+		{
+			font-size:1.1em;
+		}
     </style>
 </head>
 
 <body>
 	<div id = "title" style="font-size:30px;text-align:center;">The result page: the compressed graph of knowledge components</div>
 	<div id = "nar">
-        <p>Elapsed time: <strong>{{iv[4]}}</strong> seconds </p> <br>
-        <p>Total number of tokens: <strong>{{iv[0]}}</strong></p> <br>
-        <p><strong>{{iv[1]}}</strong> seconds per segment, Total number of segments: <strong>{{iv[2]}}</strong></p><br>
-        <p>We finally extracted <strong>{{iv[3]}}</strong> knowledge components. The Hit option was set to <strong>{{iv[5]}}</strong>. The number of knowledge components appearing more than one is <strong>{{iv[6]}}</strong>.</p>
+        <p>Elapsed time: <strong>{{iv[4]}}</strong> seconds,&nbsp;&nbsp;Total number of tokens: <strong>{{iv[0]}}</strong>,&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong>{{iv[1]}}</strong> seconds per segment, Total number of segments: <strong>{{iv[2]}}</strong></p>
+		<p>We finally extracted <strong>{{iv[3]}}</strong> knowledge components. The Hit option was set to <strong>{{iv[5]}}</strong>.&nbsp;&nbsp;The number of knowledge components appearing more than one is <strong>{{iv[6]}}</strong>.</p>
 	</div>
 	<div style="text-align:center;"><iframe id="player" type="text/html" width="640" height="360" src="{{url}}" frameborder="0"></iframe></div>
 	<br><br>

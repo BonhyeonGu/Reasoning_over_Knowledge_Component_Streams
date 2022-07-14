@@ -18,6 +18,29 @@
 			text-align: center;
 			font-size:2.0em;
         }
+		#aff
+        {
+            background-color: rgb(240, 240, 240);
+			text-align: center;
+			font-size:1.4em;
+        }
+		#input_link
+        {
+			text-align: center;
+			font-size:1.5em;
+        }
+		.input_etc
+        {
+			text-align: center;
+			font-size:1.4em;
+        }
+
+		#aff
+        {
+            background-color: rgb(240, 240, 240);
+			text-align: center;
+			font-size:1.4em;
+        }
 		#status
         {
             background-color: rgb(11, 0, 26);
@@ -61,20 +84,19 @@
 
 <body>
 	<div id = "title">ISWC2022 Poster: Towards stream reasoning of knowledge components for online video learning</div>
-    <div id = "aff">Department of Computer Science and Artficial Intelligence, Dong-A University</div>
-    <div id = "author">Sungbeom Lee and Sejin Chun</div>
+    <div id = "aff">Department of Computer Science and Artficial Intelligence, Dong-A University, &nbsp;&nbsp;&nbsp;&nbsp; Sungbeom Lee and Sejin Chun</div>
 	<div id = "top">
 		<form action="/result" method="post" id="inp">
-			<div>Copy and paste a YouTube link for online lecture</div>
+			<br /><div id = "input_link">Copy and paste a YouTube link for online lecture</div><br />
 			<input type="text" id="url" name="url" value="https://www.youtube.com/watch?v=IbkhzcgznDA" style="width:600px;height:30px;font-size:20px;text-align:center;">
-            <br><br>
+            <br /><br />
             <div>
-                <span>Enter the time interval per segment (unit: second)<input type="text" name="sec" value="300.0" style="width:100px;height:30px;font-size:20px;text-align:center;"></span>
-                <span>Enter the number of knowledge component to be extracted(unit: number) <input type="text" name="keywordSize" value="5" style="width:100px;height:30px;font-size:20px;text-align:center;">&nbsp&nbsp;</span>
-                <span>Hit(ON/OFF) <input type="radio" name="hit" value="on">&nbsp;&nbsp;<input type="radio" name="hit" value="off" checked="checked"></span>
-                <span>Output mode(Triple/Tuple) <input type="radio" name="triple" value="on" checked="checked">&nbsp;&nbsp;<input type="radio" name="triple" value="off"></span>
+                <span class = "input_etc">Enter the time interval per segment (unit: second)&nbsp;&nbsp;<input type="text" name="sec" value="300.0" style="width:80px;height:25px;font-size:20px;text-align:center;"></span><br /><br />
+                <span class = "input_etc">Enter the number of knowledge component to be extracted(unit: number)&nbsp;&nbsp;<input type="text" name="keywordSize" value="5" style="width:80px;height:25px;font-size:20px;text-align:center;"></span><br /><br />
+                <span class = "input_etc">Hit(ON/OFF) <input type="radio" name="hit" value="on"><input type="radio" name="hit" value="off" checked="checked"></span>&nbsp;&nbsp;&nbsp;
+                <span class = "input_etc">Output mode(Triple/Tuple) <input type="radio" name="triple" value="on" checked="checked"><input type="radio" name="triple" value="off"></span><br />
             </div>
-			<br><br><button id="btnInp" style="width:200px;height:50px;font-size:30px;">Generate</button><br><br>
+			<br /><button id="btnInp" style="width:200px;height:50px;font-size:30px;">Generate</button><br><br>
 			<iframe id="player" type="text/html" width="640" height="360" src="" frameborder="0"></iframe>
 		</form>
 	</div>
