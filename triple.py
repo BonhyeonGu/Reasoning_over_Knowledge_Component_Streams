@@ -42,7 +42,7 @@ class Triple:
                         l.append(str(start) + "-" + str(end))
                     start = now
                     end = now
-                cnt+=1
+                cnt += 1
             if(start == end):
                 l.append(str(end))
             else:
@@ -60,8 +60,11 @@ class Triple:
         ret_s2 = []
         ret_s3 = []
         for key, value in ziip.items():
-            s1 = '< :v%d :hasKnowledgeComponent dbr: '%(n)
-            s3 = ' <s, e> >  %s '%(value)
+            s1 = '< :v%d :hasKnowledgeComponent dbr:'%(n)
+            s3 = ' %s >'%(value)
+            s3 = s3.replace('\'', '')
+            s3 = s3.replace('[', '<')
+            s3 = s3.replace(']', '>')
             ret_s1.append(s1)
             ret_s2.append(key)
             ret_s3.append(s3)
