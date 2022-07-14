@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>KCA</title>
+	<title>Towards stream reasoning of knowledge components for online video learning</title>
 	<script src ="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src ="https://code.jquery.com/jquery-migrate-3.3.2.js"></script>
 	<style>
@@ -60,17 +60,21 @@
 </head>
 
 <body>
-	<div id = "title">Knowledge component Abstract</div>
+	<div id = "title">ISWC2022 Poster: Towards stream reasoning of knowledge components for online video learning</div>
+    <div id = "aff">Department of Computer Science and Artficial Intelligence, Dong-A University</div>
+    <div id = "author">Sungbeom Lee and Sejin Chun</div>
 	<div id = "top">
 		<form action="/result" method="post" id="inp">
-			<div>유튜브 데스크탑 버전 URL</div>
+			<div>Copy and paste a YouTube link for online lecture</div>
 			<input type="text" id="url" name="url" value="https://www.youtube.com/watch?v=IbkhzcgznDA" style="width:600px;height:30px;font-size:20px;text-align:center;">
-			<br><br><div>타임파트 초(실수)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;키워드 개수(정수)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;히트 관여(on/off)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;트리플 형식 출력(on/off)</div>
-			<input type="text" name="sec" value="300.0" style="width:100px;height:30px;font-size:20px;text-align:center;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="text" name="keywordSize" value="5" style="width:100px;height:30px;font-size:20px;text-align:center;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="radio" name="hit" value="on">&nbsp;&nbsp;<input type="radio" name="hit" value="off" checked="checked">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<input type="radio" name="triple" value="on" checked="checked">&nbsp;&nbsp;<input type="radio" name="triple" value="off">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-			<br><br><button id="btnInp" style="width:200px;height:50px;font-size:30px;">전송</button><br><br>
+            <br><br>
+            <div>
+                <span>Enter the time interval per segment (unit: second)<input type="text" name="sec" value="300.0" style="width:100px;height:30px;font-size:20px;text-align:center;"></span>
+                <span>Enter the number of knowledge component to be extracted(unit: number) <input type="text" name="keywordSize" value="5" style="width:100px;height:30px;font-size:20px;text-align:center;">&nbsp&nbsp;</span>
+                <span>Hit(ON/OFF) <input type="radio" name="hit" value="on">&nbsp;&nbsp;<input type="radio" name="hit" value="off" checked="checked"></span>
+                <span>Output mode(Triple/Tuple) <input type="radio" name="triple" value="on" checked="checked">&nbsp;&nbsp;<input type="radio" name="triple" value="off"></span>
+            </div>
+			<br><br><button id="btnInp" style="width:200px;height:50px;font-size:30px;">Generate</button><br><br>
 			<iframe id="player" type="text/html" width="640" height="360" src="" frameborder="0"></iframe>
 		</form>
 	</div>

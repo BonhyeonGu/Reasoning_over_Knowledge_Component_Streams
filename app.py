@@ -59,14 +59,14 @@ def result():
 	frontResult = []
 #--------------------------------------------------------------------------------------
 	c = 1
-	resultJsonUpdate("프로세스 시작됨, 프로세스 진행중에 입력하지 마십시오, %d 개의 타임파트를 인식했습니다."%(queueSize))
+	resultJsonUpdate("The stage of knowledge component extraction is performed. Please do not input any character. %d segments are identified."%(queueSize))
 	while sett.qsize() != 0:
 		subInSec = sett.get()
 		#---------------------------------------------------------
 		inp = wiki.preProcess(subInSec)
 		tokenSum += len(inp)
 		#ret.append(inp)
-		resultJsonUpdate("<br>%d번째 타임파트(%d분 ~ %d분), %d개의 단어를 인식했습니다. 시작" %(c, (splitSec * c - splitSec) / 60, (splitSec * c) / 60, len(inp)))
+		resultJsonUpdate("<br>At # %d segment, (%d ~ %d minutes), %d words are collected. Start..." %(c, (splitSec * c - splitSec) / 60, (splitSec * c) / 60, len(inp)))
 		#---------------------------------------------------------
 		g = wiki.graphProcess(inp)
 		result = g.getAnnotation(keywordSize, hitBool)
@@ -75,7 +75,7 @@ def result():
 			sameCountSum += sameCount(frontResult, result)
 		frontResult = result
 		#---------------------------------------------------------
-		resultJsonUpdate("~완료")
+		resultJsonUpdate("~Completed")
 		#---------------------------------------------------------
 		retTemp = []
 		for i in range(len(result)):

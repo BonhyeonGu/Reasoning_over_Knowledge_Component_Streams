@@ -2,7 +2,7 @@
 <html>
 <head>
 	<meta charset="UTF-8">
-	<title>결과 페이지</title>
+	<title>Towards stream reasoning of knowledge components for online video learning</title>
 	<script src ="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 	<script src ="https://code.jquery.com/jquery-migrate-3.3.2.js"></script>
 
@@ -28,11 +28,12 @@
 </head>
 
 <body>
-	<div id = "title" style="font-size:30px;text-align:center;">결과 보고서</div>
+	<div id = "title" style="font-size:30px;text-align:center;">The result page: the compressed graph of knowledge components</div>
 	<div id = "nar">
-		소요시간 <strong>{{iv[4]}}</strong>초<br>
-		총 <strong>{{iv[0]}}</strong>개의 Token을 확보하여 <strong>{{iv[1]}}</strong> 초를 기준으로 분활한 <strong>{{iv[2]}}</strong> 개의 파트에 대해<br>
-		각각 <strong>{{iv[3]}}</strong>개의 KC를 생성했습니다. 동일한 문자반복(Hit)의 고려는 <strong>{{iv[5]}}</strong> 되었습니다. 파트간 겹치는 개수는 총<strong>{{iv[6]}}</strong>개 입니다.
+        <p>Elapsed time: <strong>{{iv[4]}}</strong> seconds </p> <br>
+        <p>Total number of tokens: <strong>{{iv[0]}}</strong></p> <br>
+        <p><strong>{{iv[1]}}</strong> seconds per segment, Total number of segments: <strong>{{iv[2]}}</strong></p><br>
+        <p>We finally extracted <strong>{{iv[3]}}</strong> knowledge components. The Hit option was set to <strong>{{iv[5]}}</strong>. The number of knowledge components appearing more than one is <strong>{{iv[6]}}</strong>.</p>
 	</div>
 	<div style="text-align:center;"><iframe id="player" type="text/html" width="640" height="360" src="{{url}}" frameborder="0"></iframe></div>
 	<br><br>
