@@ -44,9 +44,9 @@
 		{% if iv[7] %}
 			{% for i in range(ret1|length) %}
 				{% if loop.index % 2 == 0 %}
-				<div style="background-color: rgb(255, 255, 255);font-size:1.3em;">{{i}}---{{ret1[i]}}<a href="http://dbpedia.org/resource/{{ret2[i]}}">{{ret2[i]}}</a>{{ret3[i]}}</div>
+				<div style="background-color: rgb(255, 255, 255);font-size:1.3em;">{{i}}---{{ret1[i]}}<a href="http://dbpedia.org/resource/{{ret2[i]}} " target="_blank">{{ret2[i]}}</a>{{ret3[i]}}</div>
 				{% else %}
-				<div style="background-color: rgb(223, 223, 223);font-size:1.3em;">{{i}}---{{ret1[i]}}<a href="http://dbpedia.org/resource/{{ret2[i]}}">{{ret2[i]}}</a>{{ret3[i]}}</div>
+				<div style="background-color: rgb(223, 223, 223);font-size:1.3em;">{{i}}---{{ret1[i]}}<a href="http://dbpedia.org/resource/{{ret2[i]}}" target="_blank">{{ret2[i]}}</a>{{ret3[i]}}</div>
 				{% endif %}
 			{% endfor %}
 		{% else %}
