@@ -7,39 +7,15 @@ from concatenWord import concatening
 from youtube_transcript_api import YouTubeTranscriptApi
 
 class WikificationTest:
+    def __init__(self, gret1, gret2, gret3, gret4, gret5):
+        self.gret1 = gret1
+        self.gret2 = gret2
+        self.gret3 = gret3
+        self.gret4 = gret4
+        self.gret5 = gret5
+
     def graphProcess(self, inp):
         return Graph(inp)
-
-    def nonWebExecute(self, url, splitSec):
-        #ret = []    
-        sett:queue.Queue = self.urlToSplitQueue(splitSec, url)
-        c = 1
-        f = open('./out.txt', 'w', encoding='utf-8')
-        while sett.qsize() != 0:
-            subInSec = sett.get()
-            f.write("%s\n" % (subInSec))
-            #---------------------------------------------------------
-            inp = self.preProcess(subInSec)
-            #ret.append(inp)
-            #---------------------------------------------------------
-            g = self.graphProcess(inp)
-            result = g.getAnnotation(5)
-            #---------------------------------------------------------
-            print("")
-            print("%d : %d ~ %d" % (c, (splitSec * c - splitSec) / 60, (splitSec * c) / 60))
-            f.write("%d : %d ~ %d\n" % (c, (splitSec * c - splitSec) / 60, (splitSec * c) / 60))
-            #---------------------------------------------------------
-            #retTemp = []
-            for i in range(len(result)):
-                print("%lf : %s"%(result[i].PR[g.IDX], result[i].name))
-                f.write("%lf : %s\n"%(result[i].PR[g.IDX], result[i].name))
-                #retTemp.append(result[i].name)
-            #ret.append(retTemp)
-            #---------------------------------------------------------
-            c += 1
-            f.write("\n")
-            print("")
-        f.close()
 
     def urlToSplitQueue(self, splitSec, url:str):
         ret = queue.Queue()
@@ -84,6 +60,3 @@ class WikificationTest:
         out = [w for w in words if not w in stopWords]
         #print(out)
         return concatening(out,5)
-
-#웹 실행시 메인을 주석 처리할 것
-#WikificationTest().nonWebExecute('https://www.youtube.com/watch?v=egD6qsRapNY', 300.0)

@@ -133,7 +133,6 @@ class FileIO():
     def anchorTextToRangeSingle(self, inps:list):
         with open(self.nameAnchorText, 'rb') as f:
             arr = pic.load(f)
-
         ret = []
         for inp in inps:
             inp = inp.encode('utf-8')

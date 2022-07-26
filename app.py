@@ -6,8 +6,11 @@ from pyparsing import restOfLine
 #--------------------------------------------------------------------------------------
 from wikificationTest import WikificationTest
 from triple import Triple
+import fileReady
 #--------------------------------------------------------------------------------------
 import queue
+#--------------------------------------------------------------------------------------
+gret1, gret2, gret3, gret4, gret5 = fileReady.ready('./')
 #--------------------------------------------------------------------------------------
 app = Flask(__name__)
 #--------------------------------------------------------------------------------------
@@ -24,14 +27,15 @@ def sameCount(a:list, b:list):
 			if i.name == j.name:
 				ret += 1
 	return ret
+
 #--------------------------------------------------------------------------------------
 @app.route("/")
 def index():
 	return render_template('index.html')
 @app.route("/result", methods=['POST'])
 def result():
-	global nowStatusStr
-	global nowStatusSec
+	global gret1, gret2, gret3, gret4, gret5
+	global nowStatusStr, nowStatusSec
 	tokenSum = 0
 	nowStatusStr = ""
 	nowStatusSec = 0
@@ -50,8 +54,8 @@ def result():
 	else:
 		tripleBool = False
 #--------------------------------------------------------------------------------------
-	wiki = WikificationTest()
-	ret = []    
+	wiki = WikificationTest(gret1, gret2, gret3, gret4, gret5)
+	ret = []
 	sett:queue.Queue = wiki.urlToSplitQueue(splitSec, url)
 	queueSize = sett.qsize()
 #--------------------------------------------------------------------------------------
