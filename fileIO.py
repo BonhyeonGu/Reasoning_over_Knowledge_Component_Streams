@@ -18,17 +18,23 @@ class FileIO():
         self.REVERS_SLASH = "~R~"
         self.DOUBLE_DOT = "~P~"
         self.SINGLE_DOT = "~O~"
-
-        self.nameIDToTitle = local + 'ComIDToTitle.npy'
-        self.nameTitleToID = local + 'ComTittleToID.pkl'
-        self.nameAnchorText = local + 'Arr1.pkl'
-        self.nameAnchorTargetID = local + 'Arr2.pkl'
-        self.nameNowPageID = local +'Arr3.pkl'
         self.nameBack = local + 'backlinks/'
         self.namePr0den = local + 'pr0dens/'
-
+       
         self.craw = Crawling()
         #self.m = Manager()
+
+        self.arr_idToTitle = np.load(local + 'ComIDToTitle.npy', allow_pickle=True)
+        with open(local + 'ComTittleToID.pkl','rb') as f:
+            self.dict_titleToID = pic.load(f)
+        #-------------------------------------------------------------------
+        with open(local + 'Arr1.pkl', 'rb') as f:
+            self.list_anchorText = pic.load(f)
+        with open(local + 'Arr2.pkl', 'rb') as f:
+            self.list_anchorTargetID = pic.load(f)
+        with open(local +'Arr3.pkl', 'rb') as f:
+            self.list_nowPageID = pic.load(f)
+        #-------------------------------------------------------------------
 
     #encode/decode----------------------------------------------------
     def nameEncode(self, s:str):
@@ -74,17 +80,14 @@ class FileIO():
     #!!!
     def getIDToTitle(self, inps:list):
         ret = []
-        arr = np.load(self.nameIDToTitle, allow_pickle=True)
         for inp in inps:
-            ret.append(arr[inp])
+            ret.append(self.arr_idToTitle[inp])
         return ret
 
     def getTitleToID(self, inps:list):
         ret = []
-        with open(self.nameTitleToID,'rb') as f:
-            dic = pic.load(f)
         for inp in inps:
-            ret.append(dic[inp])
+            ret.append(self.dict_titleToID[inp])
         return ret
     
     #-------------------------------------------------------------------
@@ -130,27 +133,26 @@ class FileIO():
             pro.join()
         return ret
 
-    def anchorTextToRangeSingle(self, inps:list):
-        with open(self.nameAnchorText, 'rb') as f:
-            arr = pic.load(f)
+    #-------------------------------------------------------------------
 
+    def anchorTextToRangeSingle(self, inps:list):
         ret = []
         for inp in inps:
             inp = inp.encode('utf-8')
             s = 0
-            e = len(arr)
+            e = len(self.list_anchorText)
             while(True):
                 m = (s + e) // 2
                 #print(arr[m])
-                if inp == arr[m]:
+                if inp == self.list_anchorText[m]:
                     for i in range(m, s - 2, -1):
                         #print(arr[m])
-                        if arr[i] != inp:
+                        if self.list_anchorText[i] != inp:
                             retS = i+1
                             break
                     for i in range(m, e + 2):
                         #print(arr[m])
-                        if arr[i] != inp:
+                        if self.list_anchorText[i] != inp:
                             retE = i
                             break
                     ret.append((retS, retE))
@@ -158,7 +160,7 @@ class FileIO():
                 elif s >= e:
                     ret.append(-1)
                     break
-                elif inp < arr[m]:
+                elif inp < self.list_anchorText[m]:
                     e = m-1
                 else:
                     s = m+1
@@ -166,13 +168,9 @@ class FileIO():
     #-------------------------------------------------------------------
 
     def callListAnchorTargetID(self):
-        with open(self.nameAnchorTargetID, 'rb') as f:
-            ret = pic.load(f)
-        return ret
+        return self.list_anchorTargetID
 
     def callListNowPageID(self):
-        with open(self.nameNowPageID, 'rb') as f:
-            ret = pic.load(f)
-        return ret
+        return self.list_nowPageID
     
     #-------------------------------------------------------------------

@@ -4,12 +4,9 @@ from base64 import decode
 import cProfile
 from operator import itemgetter
 from math import log2
-import pickle
 from xmlrpc.client import boolean
 import visualizeGraph as vg
 from collections import defaultdict, Counter
-
-from fileIO import FileIO
 
 import time 
 import datetime
@@ -56,12 +53,12 @@ class Edge:
         self.P = sameTargetPage/entireAnchorNum
 
 class Graph:
-    def __init__(self, candidateMention:list):#candidateMention: 멘션 후보
+    def __init__(self, candidateMention:list, fIO):#candidateMention: 멘션 후보
         self.mentionList = candidateMention
         self.MAXENTROPHY = 3.0
         self.IDX = 0
         #---------------------------------------------------
-        self.FileIO = FileIO()#경로 넣을것!
+        self.FileIO = fIO
         #---------------------------------------------------
         
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
