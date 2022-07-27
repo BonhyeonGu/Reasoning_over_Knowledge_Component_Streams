@@ -10,7 +10,7 @@ from fileIO import FileIO
 #--------------------------------------------------------------------------------------
 import queue
 #--------------------------------------------------------------------------------------
-fIO = FileIO('D:\\Non\\')
+fIO = FileIO()
 app = Flask(__name__)
 #--------------------------------------------------------------------------------------
 nowStatusStr = ""
@@ -119,5 +119,4 @@ def statusJsonOutput():
 	return jsonify(test_data)
 
 if __name__ == "__main__":
-		app.debug = True
-		app.run(debug=True)
+	app.run(host='0.0.0.0', port=5050)
