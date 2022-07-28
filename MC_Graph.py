@@ -63,9 +63,103 @@ class Graph:
         #---------------------------------------------------
         self.FileIO = FileIO()#경로 넣을것!
         #---------------------------------------------------
+    def makeAllNode_test(self, mentionVertex:list, conceptVertex:list, ignoreRepeatedWord:bool):
+        timeStart = time.time()
         
+        with open("anchorRange_entDict_PR0numerator.pkl",'rb') as inpf1:
+            anchorData = pickle.load(inpf1)
+        timeEnd = time.time()
+        sec = timeEnd - timeStart
+        result_list = str(datetime.timedelta(seconds=sec))
+        print("dataLoadTime:"+ result_list)
+        #없는 텍스트인지 확인해봐야함
+
+        li = self.mentionList
+        
+        mentionVertexAppend = mentionVertex.append
+        conceptVertexAppend = conceptVertex.append
+
+        
+        sortedList = list()
+        conceptCandidateList = list()
+        anchorTextNum = list()
+        i = -1
+        GetPR0Den = self.FileIO.getPR0den
+        
+        #같은 단어 들어오는지 확인하기위한 변수
+        mentionChecker = dict()
+        for mention in li:
+            i+=1
+            #앵커텍스트로서 존재하지 않는 단어는 제외
+            try:
+                #n = 전체 앵커텍스트 개수
+                n = anchorData[mention][1] - anchorData[mention][0]
+            except KeyError:
+                continue
+
+            #같은 단어 들어오면 무시
+            if ignoreRepeatedWord == True:
+                try:
+                    mentionChecker[mention]+=1
+                    continue
+                except KeyError:
+                    mentionChecker[mention] = 1
+            
+            entDict = anchorData[mention][2]
+            entrophy = calcEnt(entDict,n)
+            #엔트로피 통과하는지 확인
+            if entrophy >=self.MAXENTROPHY:
+                continue
+            anchorTextNum.append(n)
+            #딕셔너리 정렬
+            sortedList = sorted(entDict.items(), key = itemgetter(1), reverse=True )
+            conceptCandidateList.append(tuple(sortedList[:20]))
+
+            #멘션노드 생성
+            nowMention = Vertex(0,mention)
+
+            #pageDict = getDict(anchorTextRange[i], PageID)
+            nowMention.PR0 = anchorData[mention][3]/GetPR0Den(mention)#Crawling에 만들어놓은거 그대로 사용
+
+            mentionVertexAppend(nowMention)
+        conceptDict = dict()
+        conceptCandidateList = tuple(conceptCandidateList)
+        anchorTextNum = tuple(anchorTextNum)
+        i = -1
+        for mentionNode in mentionVertex:
+            i+=1
+            j=-1
+            
+            for conceptCandidate in conceptCandidateList[i]:#하나의 멘션에 대한 컨셉들 수만큼 노드, 간선 만듬
+                j+=1
+                #ni >= 2 인 것만 컨셉노드 생성
+                if conceptCandidate[1] < 2:
+                    break
+
+                #이미 만든 컨셉 노드중에 같은 노드가 존재하는지 확인
+                try:
+                    nowConcept = conceptDict[conceptCandidate[0]]
+                except KeyError:
+                    nowConcept = Vertex(1,str(conceptCandidate[0]))
+                    conceptDict[conceptCandidate[0]] = nowConcept
+                    conceptVertexAppend(nowConcept)
+
+
+                edge = Edge(0)#mention to concept 엣지 생성
+                edge.P = conceptCandidate[1] / anchorTextNum[i] #P(가중치) 계산
+                #컨셉노드와 엣지 연결
+                edge.dest = nowConcept
+                edge.start = mentionNode
+
+                mentionNode.edges.append(edge)#멘션노드와 엣지 연결
+                nowConcept.pointTo.append(edge)#컨셉노드에 자신을가리키는 엣지 리스트에 추가
+            #하나의 멘션에대한 컨셉노드 연결 끝
+            
+        #모든 멘션에대한 노드 만들기 끝 
+          
 #-------------------------------------------------------------------------------------------------------------------------------------------------------
     def makeAllNode(self, mentionVertex:list, conceptVertex:list, ignoreRepeatedWord:bool):
+        timeStart = time.time()
         anchorTextRange = self.FileIO.anchorTextToRangeSingle(self.mentionList)
         anchorTextRange = tuple(anchorTextRange)
         #없는 텍스트인지 확인해봐야함
@@ -74,7 +168,10 @@ class Graph:
         TargetID = tuple(TargetID)
         PageID = self.FileIO.callListNowPageID()
         PageID = tuple(PageID)
-
+        timeEnd = time.time()
+        sec = timeEnd - timeStart
+        result_list = str(datetime.timedelta(seconds=sec))
+        print("dataLoadTime:"+ result_list)
         li = self.mentionList
         
         mentionVertexAppend = mentionVertex.append
@@ -301,7 +398,7 @@ class Graph:
         timeStart = time.time()
         mentionVertex=[]#멘션 노드 저장장소
         conceptVertex=[]#컨셉 노드 저장장소
-        self.makeAllNode(mentionVertex, conceptVertex, ignoreRepeatedWord)
+        self.makeAllNode_test(mentionVertex, conceptVertex, ignoreRepeatedWord)
         timeEnd = time.time()
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
