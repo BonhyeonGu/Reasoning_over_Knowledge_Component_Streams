@@ -27,6 +27,7 @@ class FileIO():
         self.nameBack = local + 'backlinks/'
         self.namePr0den = local + 'pr0dens/'
 
+        self.nameDictFull = local + 'anchorRange_entDict_PR0numerator.pkl'
         self.craw = Crawling()
         #self.m = Manager()
 
@@ -172,6 +173,13 @@ class FileIO():
 
     def callListNowPageID(self):
         with open(self.nameNowPageID, 'rb') as f:
+            ret = pic.load(f)
+        return ret
+        
+    #-------------------------------------------------------------------
+
+    def callDictFull(self):
+        with open(self.nameDictFull, 'rb') as f:
             ret = pic.load(f)
         return ret
     

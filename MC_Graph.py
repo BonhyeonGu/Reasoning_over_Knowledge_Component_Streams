@@ -66,8 +66,7 @@ class Graph:
     def makeAllNode_test(self, mentionVertex:list, conceptVertex:list, ignoreRepeatedWord:bool):
         timeStart = time.time()
         
-        with open("anchorRange_entDict_PR0numerator.pkl",'rb') as inpf1:
-            anchorData = pickle.load(inpf1)
+        anchorData = self.FileIO.callDictFull()
         timeEnd = time.time()
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
