@@ -28,13 +28,15 @@ class FileIO():
         with open(local + 'ComTittleToID.pkl','rb') as f:
             self.dict_titleToID = pic.load(f)
         #-------------------------------------------------------------------
-        with open(local + 'Arr1.pkl', 'rb') as f:
+        """ with open(local + 'Arr1.pkl', 'rb') as f:
             self.list_anchorText = pic.load(f)
         with open(local + 'Arr2.pkl', 'rb') as f:
             self.list_anchorTargetID = pic.load(f)
         with open(local +'Arr3.pkl', 'rb') as f:
-            self.list_nowPageID = pic.load(f)
+            self.list_nowPageID = pic.load(f) """
         #-------------------------------------------------------------------
+        with open(local + 'anchorRange_entDict_PR0numerator.pkl', 'rb') as f:
+            self.dict_full = pic.load(f)
 
     #encode/decode----------------------------------------------------
     def nameEncode(self, s:str):
@@ -92,7 +94,7 @@ class FileIO():
     
     #-------------------------------------------------------------------
 
-    def anchorTextToRangeSub(self, inps:list, arr:list, ret:dict):
+    """ def anchorTextToRangeSub(self, inps:list, arr:list, ret:dict):
         for inp in inps:
             s = 0
             e = len(arr)
@@ -172,5 +174,7 @@ class FileIO():
 
     def callListNowPageID(self):
         return self.list_nowPageID
-    
+         """
+    def callDictFull(self):
+        return self.dict_full
     #-------------------------------------------------------------------
