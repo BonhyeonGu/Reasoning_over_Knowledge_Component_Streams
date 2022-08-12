@@ -19,9 +19,8 @@
 
 [DumpMaker](https://github.com/BonhyeonGu/DUMPMAKER-Reasoning_over_Knowledge_Component_Streams)
 
-또한 아래의 하이라키대로 준비해야 합니다.
+또한 파일과 동일한 작업폴더에 있어야 합니다.
 
-사진2
 
 해당 프로그램은 아래의 추가적 Python Module들을 필요로 합니다.
 
@@ -36,7 +35,7 @@
 
 ## Tutorial
 
-![03_Tuto](https://user-images.githubusercontent.com/24387014/184350805-697abed0-3e3c-4a21-bea5-7bc2b150685d.png)
+![02_Tuto](https://user-images.githubusercontent.com/24387014/184350805-697abed0-3e3c-4a21-bea5-7bc2b150685d.png)
 
 ### 1. Youtube URL
 
@@ -64,4 +63,4 @@ Segment를 나눌 기준이 되는 시간(초)를 정의합니다.
 결과를 보기 편하게 Knowledge Component 형식으로 표시하거나 Triple 형식으로 출력하기를 결정합니다.
 Triple 타입은 다음 프로젝트에 사용할 예정입니다.
 
-사진4
+![3_TripleOrTuple](https://user-images.githubusercontent.com/24387014/184352041-729f6567-39bb-41a8-bda4-c1e31367badb.png)
