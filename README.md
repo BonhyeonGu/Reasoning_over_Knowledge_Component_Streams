@@ -8,6 +8,8 @@
 
 ## Overview
 
+사진 1
+
 유튜브 영상의 Knowledge Component를 출력하는 프로그램입니다.
 대부분 처리하기 위해 미리 가공된 Wikipedia Data를 사용하며 오직 하나의 속성만 크롤링, 캐싱합니다.
 
@@ -15,11 +17,11 @@
 
 준비된 Dumpfile들이 필요합니다. 아래의 Reposit에서 확인 바랍니다.
 
-링크
+[DumpMaker](https://github.com/BonhyeonGu/DUMPMAKER-Reasoning_over_Knowledge_Component_Streams)
 
 또한 아래의 하이라키대로 준비해야 합니다.
 
-사진
+사진2
 
 해당 프로그램은 아래의 추가적 Python Module들을 필요로 합니다.
 
@@ -34,7 +36,7 @@
 
 ## Tutorial
 
-사진
+![tutorial](./README/3_Tuto)
 
 ### 1. Youtube URL
 
@@ -62,4 +64,4 @@ Segment를 나눌 기준이 되는 시간(초)를 정의합니다.
 결과를 보기 편하게 Knowledge Component 형식으로 표시하거나 Triple 형식으로 출력하기를 결정합니다.
 Triple 타입은 다음 프로젝트에 사용할 예정입니다.
 
-사진
+사진4
