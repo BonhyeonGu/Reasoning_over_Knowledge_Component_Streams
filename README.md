@@ -8,7 +8,7 @@
 
 ## Overview
 
-사진 1
+![01_Over](https://user-images.githubusercontent.com/24387014/184350904-12adecf5-0adb-498d-922d-a8c8da9bf513.gif)
 
 유튜브 영상의 Knowledge Component를 출력하는 프로그램입니다.
 대부분 처리하기 위해 미리 가공된 Wikipedia Data를 사용하며 오직 하나의 속성만 크롤링, 캐싱합니다.
@@ -36,7 +36,7 @@
 
 ## Tutorial
 
-![tutorial](./README/3_Tuto)
+![03_Tuto](https://user-images.githubusercontent.com/24387014/184350805-697abed0-3e3c-4a21-bea5-7bc2b150685d.png)
 
 ### 1. Youtube URL
 
