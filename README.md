@@ -16,11 +16,8 @@
 ## How to Install
 
 준비된 Dumpfile들이 필요합니다. 아래의 Reposit에서 확인 바랍니다.
-
 [DumpMaker](https://github.com/BonhyeonGu/DUMPMAKER-Reasoning_over_Knowledge_Component_Streams)
-
 또한 파일과 동일한 작업폴더에 있어야 합니다.
-
 
 해당 프로그램은 아래의 추가적 Python Module들을 필요로 합니다.
 
