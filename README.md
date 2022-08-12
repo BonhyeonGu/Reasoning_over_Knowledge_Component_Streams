@@ -56,7 +56,7 @@ Segment를 나눌 기준이 되는 시간(초)를 정의합니다.
 ### 4. Whether of Calculate Hit Count (Default False)
 
 자막 속 Mention들을 계속해서 반영하게 되면, 단어를 중복적으로 연결짓게 됩니다. 이는 결과가  Mention의 등장 횟수와 연관됩니다.
-만약 해당 값을 False로 정의한다면, 한 Segment속에 동일한 Mention이 접수되면 필터링 됩니다. 
+만약 해당 값을 False로 정의한다면, 한 Segment속에 동일한 Mention이 접수될 때 필터링 됩니다. 
 
 ### 5. Whether of Output Structure (Default Triple)
 
