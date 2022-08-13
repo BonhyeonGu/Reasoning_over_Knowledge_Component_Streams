@@ -13,11 +13,11 @@
 유튜브 영상의 Knowledge Component를 출력하는 프로그램입니다.
 대부분 처리하기 위해 미리 가공된 Wikipedia Data를 사용하며 오직 하나의 속성만 크롤링, 캐싱합니다.
 
-## How to Install
+## How to Run
 
-준비된 Dumpfile들이 필요합니다. 아래의 Reposit에서 확인 바랍니다.  
-[DumpMaker](https://github.com/BonhyeonGu/DUMPMAKER-Reasoning_over_Knowledge_Component_Streams)  
-또한 파일과 동일한 작업폴더에 있어야 합니다.
+준비된 Dumpfile들이 필요합니다. 해당 Reposit의 [Releases](https://github.com/BonhyeonGu/Reasoning_over_Knowledge_Component_Streams/releases)에서 확인 가능합니다.  
+모두 내려받은 후 작업영역에 넣습니다. 'bon's links'
+
 
 해당 프로그램은 아래의 추가적 Python Module들을 필요로 합니다.
 
@@ -29,6 +29,9 @@
  - nltk (추가 설치 필요)
  - matplotlib
  - networkx
+
+파일 app.py를 flask run 명령어를 통하여 웹 서비스를 실행할 수 있습니다.
+또는 
 
 ## Tutorial
 

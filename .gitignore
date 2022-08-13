@@ -2,7 +2,10 @@
 __pycache*
 Cache/
 
+backlinksZip
+
 anchorRange_entDict_PR0numerator.pkl
-bon's Links
 ComIDToTitle.npy
 ComTittleToID.pkl
+backlinks/
+pr0dens/
