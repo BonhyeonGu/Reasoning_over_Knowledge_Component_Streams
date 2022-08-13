@@ -1,3 +1,8 @@
 .vscode*
 __pycache*
 Cache/
+
+anchorRange_entDict_PR0numerator.pkl
+bon's Links
+ComIDToTitle.npy
+ComTittleToID.pkl
