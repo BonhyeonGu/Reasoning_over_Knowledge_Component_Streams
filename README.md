@@ -26,10 +26,10 @@
  - beautifulsoup4
  - lxml
  - numpy
- - nltk (추가 설치 필요)
+ - nltk (추가 설치 필요, Workspace 내부의 nltk_install.py로 처리할 수 있습니다.)
  - matplotlib
  - networkx
- 
+
 다음은 해당 Reposit의 Branch를 결정합니다. Master와 Server를 고를 수 있으며 이 둘의 차이는 아래에서 서술할 자료구조를 상시 머물게 할 지의 차이입니다.
 따라서 Master는 약 8GB의 메모리를, Server는 16GB의 메모리를 필요로 합니다.
 
@@ -43,17 +43,37 @@
 
 이후 Workspace내부의 unzipBacklinks.py를 실행합니다. all_clear가 출력되어야 완료되었음을 나타냅니다. 이 작업이 완료되면 driectory-backlinks가 채워진 것을 확인할 수 있습니다.
 
+아래는 준비가 완료되었을 때의 조회입니다. ('nohup.out'은 linux backgrount가 생성함)
+![clear](https://user-images.githubusercontent.com/24387014/184473483-f47834f2-b9d6-45a7-82db-23885925cdd0.PNG)
+
 ## How to Run
 
-### 일반적인 실행
+### Run : Web Service
 
 Workspace 내부의 app.py로 flask run 명령어를 통하여 웹 서비스를 실행할 수 있습니다.
 
 ### Debug : Only Find KnowledgComponent
 
-### Debug : Find KnowledgComponent & Visualization Graph
+Workspace 내부의 wikificationTest.py을 edit open하여 89번째 줄을 주석 해제합니다.  
+해당 메소드의 각 인자는 youtube url, Second of Second of Split Segmen를 뜻합니다. 원하는 대로 edit 후 open된 wikificationTest.py 자체를 실행합니다.  
+KnowledgComponent 가 Buffer에 출력됩니다.
 
-Debug : Only Find KnowledgComponent 
+주의 : 만약 다시 Web Service로 Run 하고 싶다면 해당 89번째 줄을 다시 주석처리 해주어야 합니다.
+
+### Debug : Visualization Graph
+
+Workspace 내부의 MC_Graph.py을 edit open하여 __414번째 줄__을 주석 해제합니다. 해당 작업은 위의 *Only Find KnowledgComponent*와 함께 쓰시는 것을 권장드립니다.
+종료되면 matplotlib와 networkx를 통해 Graph Window가 나타납니다.
+
+<div align="center">
+
+![Graph](https://user-images.githubusercontent.com/24387014/184474406-7c54a7dd-c561-4a59-aa17-4432bc2ad887.jpeg)
+
+</div>
+
+또는 visualizeGraph.py에서 그래프 모양을 설정할 수 있습니다.
+
+주의 : 해당 작업은 출력 생성과 출력을 살펴보려는 시도에서 Over head가 지속적으로 발생합니다.
 
 ## Tutorial
 
