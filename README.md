@@ -43,7 +43,7 @@
 
 이후 Workspace내부의 unzipBacklinks.py를 실행합니다. all_clear가 출력되어야 완료되었음을 나타냅니다. 이 작업이 완료되면 driectory-backlinks가 채워진 것을 확인할 수 있습니다.
 
-아래는 준비가 완료되었을 때의 조회입니다. ('nohup.out'은 linux backgrount가 생성함)
+아래는 준비가 완료되었을 때의 조회입니다. ('nohup.out'은 linux background가 생성함)
 ![clear](https://user-images.githubusercontent.com/24387014/184473483-f47834f2-b9d6-45a7-82db-23885925cdd0.PNG)
 
 ## How to Run
