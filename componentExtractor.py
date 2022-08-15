@@ -6,7 +6,7 @@ from nltk.corpus import stopwords
 from concatenWord import concatening
 from youtube_transcript_api import YouTubeTranscriptApi
 
-class WikificationTest:
+class ComponentExtractor:
     def __init__(self, fIO):
         self.fIO = fIO
 

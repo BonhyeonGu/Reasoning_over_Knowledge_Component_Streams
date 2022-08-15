@@ -35,7 +35,7 @@ class FileIO():
         with open(local +'Arr3.pkl', 'rb') as f:
             self.list_nowPageID = pic.load(f) """
         #-------------------------------------------------------------------
-        with open(local + 'anchorRange_entDict_PR0numerator.pkl', 'rb') as f:
+        with open(local + 'anchorData.pkl', 'rb') as f:
             self.dict_full = pic.load(f)
 
     #encode/decode----------------------------------------------------

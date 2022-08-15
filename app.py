@@ -4,7 +4,7 @@ from flask import Flask, render_template, request, jsonify
 from matplotlib.pyplot import tripcolor
 from pyparsing import restOfLine
 #--------------------------------------------------------------------------------------
-from wikificationTest import WikificationTest
+from componentExtractor import ComponentExtractor
 from triple import Triple
 from fileIO import FileIO
 #--------------------------------------------------------------------------------------
@@ -54,9 +54,9 @@ def result():
 	else:
 		tripleBool = False
 #--------------------------------------------------------------------------------------
-	wiki = WikificationTest(fIO)
+	CE = ComponentExtractor(fIO)
 	ret = []    
-	sett:queue.Queue = wiki.urlToSplitQueue(splitSec, url)
+	sett:queue.Queue = CE.urlToSplitQueue(splitSec, url)
 	queueSize = sett.qsize()
 #--------------------------------------------------------------------------------------
 	sameCountSum = 0
@@ -67,12 +67,12 @@ def result():
 	while sett.qsize() != 0:
 		subInSec = sett.get()
 		#---------------------------------------------------------
-		inp = wiki.preProcess(subInSec)
+		inp = CE.preProcess(subInSec)
 		tokenSum += len(inp)
 		#ret.append(inp)
 		resultJsonUpdate("<br>At # %d segment, (%d ~ %d minutes), %d words are collected. Start..." %(c, (splitSec * c - splitSec) / 60, (splitSec * c) / 60, len(inp)))
 		#---------------------------------------------------------
-		g = wiki.graphProcess(inp)
+		g = CE.graphProcess(inp)
 		result = g.getAnnotation(keywordSize, hitBool)
 		#---------------------------------------------------------
 		if len(frontResult) != 0:
