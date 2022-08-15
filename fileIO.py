@@ -27,7 +27,7 @@ class FileIO():
         self.nameBack = local + 'backlinks/'
         self.namePr0den = local + 'pr0dens/'
 
-        self.nameDictFull = local + 'anchorRange_entDict_PR0numerator.pkl'
+        self.nameDictFull = local + 'anchorData.pkl'
         self.craw = Crawling()
         #self.m = Manager()
 
