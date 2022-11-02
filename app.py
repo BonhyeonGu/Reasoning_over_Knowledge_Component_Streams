@@ -6,13 +6,16 @@ from pyparsing import restOfLine
 #--------------------------------------------------------------------------------------
 from componentExtractor import ComponentExtractor
 from triple import Triple
+from fileIO import FileIO
 #--------------------------------------------------------------------------------------
 import queue
 #--------------------------------------------------------------------------------------
+fIO = FileIO()
 app = Flask(__name__)
 #--------------------------------------------------------------------------------------
 nowStatusStr = ""
 nowStatusSec = -1
+#--------------------------------------------------------------------------------------
 def resultJsonUpdate(s:str):
 	global nowStatusStr
 	nowStatusStr += s
@@ -30,6 +33,7 @@ def index():
 	return render_template('index.html')
 @app.route("/result", methods=['POST'])
 def result():
+	global fIO
 	global nowStatusStr
 	global nowStatusSec
 	tokenSum = 0
@@ -50,7 +54,7 @@ def result():
 	else:
 		tripleBool = False
 #--------------------------------------------------------------------------------------
-	CE = ComponentExtractor()
+	CE = ComponentExtractor(fIO)
 	ret = []    
 	sett:queue.Queue = CE.urlToSplitQueue(splitSec, url)
 	queueSize = sett.qsize()
@@ -115,5 +119,4 @@ def statusJsonOutput():
 	return jsonify(test_data)
 
 if __name__ == "__main__":
-		app.debug = True
-		app.run(debug=True)
+	app.run(host='0.0.0.0', port=5050)

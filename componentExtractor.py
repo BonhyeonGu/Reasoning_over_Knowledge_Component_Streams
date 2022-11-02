@@ -7,8 +7,11 @@ from concatenWord import concatening
 from youtube_transcript_api import YouTubeTranscriptApi
 
 class ComponentExtractor:
+    def __init__(self, fIO):
+        self.fIO = fIO
+
     def graphProcess(self, inp):
-        return Graph(inp)
+        return Graph(inp, self.fIO)
 
     def nonWebExecute(self, url, splitSec):
         #ret = []    
