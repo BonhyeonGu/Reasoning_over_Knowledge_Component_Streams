@@ -1,8 +1,5 @@
 #--------------------------------------------------------------------------------#flask
-from re import T
 from flask import Flask, render_template, request, jsonify
-from matplotlib.pyplot import tripcolor
-from pyparsing import restOfLine
 #--------------------------------------------------------------------------------------
 from componentExtractor import ComponentExtractor
 from triple import Triple
@@ -10,7 +7,7 @@ from fileIO import FileIO
 #--------------------------------------------------------------------------------------
 import queue
 #--------------------------------------------------------------------------------------
-fIO = FileIO()
+fIO = FileIO(local = './')
 app = Flask(__name__)
 #--------------------------------------------------------------------------------------
 nowStatusStr = ""

@@ -1,14 +1,6 @@
-#from ast import operator
-from ast import Constant
-from base64 import decode
-import cProfile
 from operator import itemgetter
-from math import log2
-import pickle
-from xmlrpc.client import boolean
 import visualizeGraph as vg
-from collections import defaultdict, Counter
-
+from collections import defaultdict
 import time 
 import datetime
 
@@ -409,7 +401,8 @@ class Graph:
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
         print(result_list)
-        #vg.visualize(mentionVertex,conceptVertex)
+        #vg.visualize(mentionVertex, conceptVertex)
+
         #PR0 계산
         print("calcPR0")
         timeStart = time.time()

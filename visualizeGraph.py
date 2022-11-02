@@ -61,23 +61,3 @@ def visualize(mentionList:list, conceptList:list):
     #자동
     #nx.draw(g, with_labels = True, node_size = 200, font_size = 10)
     plt.show()
-
-if __name__ == '__main__':  
-    #테스트용
-    # g = nx.DiGraph()
-    # g.add_nodes_from([0,11,5,3,7,6,8,8,8])
-    # g.add_weighted_edges_from([(0,5,1.5),(11,8,2.2),(5,3,0.5)])
-    # pos=dict()
-    # pos[0]=[10,200]
-    # pos[11]=[20,200]
-    # pos[5]=[30,200]
-    # pos[3] = [40,200]
-    # pos[7]=[50,200]
-    # pos[6]=[60,200]
-    # pos[8]=[70,200]
-    # #nx.draw_networkx_nodes(g,pos=pos,node_size=100,node_color="r")
-    # nx.draw_kamada_kawai(g)
-    G = nx.complete_multipartite_graph(28, 16, 10)
-    pos = nx.multipartite_layout(G)
-    nx.draw(G,pos=pos)
-    plt.show()
