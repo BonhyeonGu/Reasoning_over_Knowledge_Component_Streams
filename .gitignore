@@ -1,7 +1,7 @@
 .vscode*
 __pycache*
 Cache/
-
+.DS_Store
 backlinksZip
 
 anchorData.pkl
