@@ -1,8 +1,11 @@
 from operator import itemgetter
-import visualizeGraph as vg
+from math import log2
 from collections import defaultdict
 import time 
 import datetime
+#-----------------------------------
+import visualizeGraph as vg
+#-----------------------------------
 
 def getDict(anchorRange:tuple, TargetID:tuple) -> dict:
     entDict = defaultdict(int)
@@ -401,8 +404,10 @@ class Graph:
         sec = timeEnd - timeStart
         result_list = str(datetime.timedelta(seconds=sec))
         print(result_list)
-        #vg.visualize(mentionVertex, conceptVertex)
-
+        #----------------------------------------------
+        #vg.visualize(mentionVertex,conceptVertex)
+        #내부에 fileIO경로 내부설정 필요함
+        #----------------------------------------------
         #PR0 계산
         print("calcPR0")
         timeStart = time.time()

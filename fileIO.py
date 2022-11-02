@@ -4,9 +4,6 @@ from crawling import Crawling
 
 class FileIO():
     def __init__(self, local = './'):
-        self.DEBUG = True
-        self.SPLIT_PROCESS = 3 # +1
-
         self.banList = set([':', '<', '>', '|'])
         self.QUESTION = "~Q~"
         self.SLASH = "~S~"
@@ -19,7 +16,6 @@ class FileIO():
         self.namePr0den = local + 'pr0dens/'
        
         self.craw = Crawling()
-        #self.m = Manager()
 
         self.arr_idToTitle = np.load(local + 'ComIDToTitle.npy', allow_pickle=True)
         with open(local + 'ComTittleToID.pkl','rb') as f:
