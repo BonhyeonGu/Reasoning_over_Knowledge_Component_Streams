@@ -75,7 +75,7 @@
 						success: function(resultData){
 							$("#status").html(resultData.s);
 						}
-					});    
+					});
 				}, 1000);
 			});
 		});
@@ -84,7 +84,7 @@
 
 <body>
 	<div id = "title">Reasoning over Knowledge component Streams</div>
-    <div id = "aff">---, &nbsp;&nbsp;&nbsp;&nbsp;---</div>
+    <div id = "aff">YouTube to Knowledge component, &nbsp;&nbsp;&nbsp;&nbsp;BonhyeonGu, SungbeomLee, MuyeonJo</div>
 	<div id = "top">
 		<form action="/result" method="post" id="inp">
 			<br /><div id = "input_link">Copy and paste a YouTube link for online lecture</div><br />
@@ -95,7 +95,6 @@
                 <span class = "input_etc">Enter the number of knowledge component to be extracted(unit: number)&nbsp;&nbsp;<input type="text" name="keywordSize" value="5" style="width:80px;height:25px;font-size:20px;text-align:center;"></span><br /><br />
                 <span class = "input_etc">Hit(ON/OFF) <input type="radio" name="hit" value="on"><input type="radio" name="hit" value="off" checked="checked"></span>&nbsp;&nbsp;&nbsp;
                 <span class = "input_etc">Output mode(Triple/Tuple) <input type="radio" name="triple" value="on" checked="checked"><input type="radio" name="triple" value="off"></span><br /><br />
-				<span class = "input_etc"><button>Neo4J</button></span>
             </div>
 			<br /><button id="btnInp" style="width:200px;height:50px;font-size:30px;">Generate</button><br><br>
 			<iframe id="player" type="text/html" width="640" height="360" src="" frameborder="0"></iframe>
