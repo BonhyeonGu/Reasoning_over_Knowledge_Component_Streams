@@ -37,9 +37,9 @@ class Triple:
                     end = now
                 elif (now-end > 1):
                     if(start == end):
-                        l.append(str(end))
+                        l.append(str(end - 1))
                     else:
-                        l.append(str(start) + "-" + str(end))
+                        l.append(str(start - 1) + "-" + str(end - 1))
                     start = now
                     end = now
                 cnt += 1
