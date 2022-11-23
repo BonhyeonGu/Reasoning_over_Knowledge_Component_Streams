@@ -44,10 +44,10 @@ class Triple:
                     end = now
                 cnt += 1
             if(start == end):
-                l.append(str(end))
+                l.append(str(end - 1))
             else:
-                print(str(start) + "-" + str(end))
-                l.append(str(start) + "-" + str(end))
+                print(str(start - 1) + "-" + str(end - 1))
+                l.append(str(start - 1) + "-" + str(end - 1))
             
             compo[key] = l
 

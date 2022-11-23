@@ -88,5 +88,5 @@ class ComponentExtractor:
         #print(out)
         return concatening(out,5)
 
-#웹 실행시 메인을 주석 처리할 것
+#웹 실행시 메인을 주석 처리할 것 
 #ComponentExtractor().nonWebExecute('https://www.youtube.com/watch?v=egD6qsRapNY', 300.0)
