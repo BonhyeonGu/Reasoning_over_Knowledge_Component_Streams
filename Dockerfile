@@ -1,4 +1,6 @@
 FROM ubuntu:20.04
+LABEL email="bonhyeon.gu@9bon.org"
+LABEL name="BonhyeonGu"
 VOLUME ["./appdata"]
 
 WORKDIR /usr/src/app
