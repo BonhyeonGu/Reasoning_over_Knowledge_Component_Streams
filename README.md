@@ -17,6 +17,8 @@
 유튜브 영상의 Knowledge Component를 출력하는 프로그램입니다.
 대부분 처리하기 위해 미리 가공된 Wikipedia Data를 사용하며 오직 하나의 속성만 크롤링, 캐싱합니다.
 
+##
+
 ## How to Install
 
 해당 프로그램은 아래의 추가적 Python Module들을 필요로 합니다.
@@ -30,13 +32,15 @@
  - matplotlib
  - networkx
 
-다음은 해당 Reposit의 Branch를 결정합니다. Master와 Server를 고를 수 있으며 이 둘의 차이는 아래에서 서술할 자료구조를 상시 머물게 할 지의 차이입니다.
-따라서 Master는 약 8GB의 메모리를, Server는 16GB의 메모리를 필요로 합니다.
+해당 프로그램은 큰 자료구조를 상시 머물게 하며 작동됩니다. 따라서 최소 아래의 사양이 필요합니다.
+ - RAM : 16GB
+ - Workspace : 20GB
 
-다음은 자료구조를 Dump한 file들이 필요합니다. 해당 Reposit의 [Releases](https://github.com/BonhyeonGu/Reasoning_over_Knowledge_Component_Streams/releases)에서 확인 가능합니다.  
-모두 내려받은 후 Workspace에 넣습니다. 'backlinksZip.7z' 는 분할 압축 되어있으니 압축을 풀고 내용물만 넣으면 완료됩니다. 이후 압축된 7z파일은 삭제해도 괜찮습니다.
+다음은 자료구조를 Dump한 파일들이 필요합니다. 해당 Reposit의 [Releases](https://github.com/BonhyeonGu/Reasoning_over_Knowledge_Component_Streams/releases)에서 확인 가능합니다.  
+모두 내려받은 후 Workspace에 넣습니다.  
+'backlinksZip.7z' 는 분할 압축 되어있으니 압축을 풀고 내용만 Workspace 내에 위치하면 되며, 압축파일은 삭제해도 무방합니다.
 
-다음은 Workspace 내에 driectory 두개를 다음 이름으로 생성합니다.
+다음은 Workspace 내에 driectory 두 개를 다음 이름으로 생성합니다.
 
  - pr0dens
  - backlinks
@@ -50,15 +54,16 @@
 
 ### Run : Web Service
 
-Workspace 내부의 app.py로 flask run 명령어를 통하여 웹 서비스를 실행할 수 있습니다.
+Workspace 내부의 app.py로 flask run 명령어를 통하여 웹 서비스를 실행할 수 있습니다.  
+http://127.0.0.1:5050 으로 접속 가능합니다.
 
 ### Debug : Only Find KnowledgComponent
 
-Workspace 내부의 wikificationTest.py을 edit open하여 89번째 줄을 주석 해제합니다.  
-해당 메소드의 각 인자는 youtube url, Second of Second of Split Segmen를 뜻합니다. 원하는 대로 edit 후 open된 wikificationTest.py 자체를 실행합니다.  
+Workspace 내부의 ComponentExtractor.py을 edit open하여 92번째 줄을 주석 해제합니다.  
+해당 메소드의 각 인자는 youtube url, Second of Second of Split Segmen를 뜻합니다. 원하는 대로 edit 후 open된 ComponentExtractor.py 자체를 실행합니다.  
 KnowledgComponent 가 Buffer에 출력됩니다.
 
-주의 : 만약 다시 Web Service로 Run 하고 싶다면 해당 89번째 줄을 다시 주석처리 해주어야 합니다.
+주의 : 만약 다시 Web Service로 Run 하고 싶다면 해당 92번째 줄을 다시 주석처리 해주어야 합니다.
 
 ### Debug : Visualization Graph
 

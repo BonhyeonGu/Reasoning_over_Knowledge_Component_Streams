@@ -30,7 +30,7 @@ def index():
 	return render_template('index.html')
 @app.route("/result", methods=['POST'])
 def result():
-	global fIO
+	global fIO	
 	global nowStatusStr
 	global nowStatusSec
 	tokenSum = 0

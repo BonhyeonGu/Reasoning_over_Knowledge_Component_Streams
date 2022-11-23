@@ -1,0 +1,12 @@
+version: '3'
+services:
+  zol1:
+    container_name: rokc
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    restart: always
+    environment:
+      - TZ=Asia/Seoul
+    ports:
+      - 5050:5050
