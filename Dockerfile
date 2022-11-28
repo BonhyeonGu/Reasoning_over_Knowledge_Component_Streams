@@ -24,5 +24,5 @@ RUN mkdir backlinks
 RUN python3 unzipBacklinks.py
 RUN python3 nltk_install.py
 
-EXPOSE 8002
+EXPOSE 5050
 ENTRYPOINT [ "python3", "app.py" ]
