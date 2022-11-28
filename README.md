@@ -67,7 +67,7 @@ KnowledgComponent 가 Buffer에 출력됩니다.
 
 ### Debug : Visualization Graph
 
-Workspace 내부의 MC_Graph.py을 edit open하여 __414번째 줄__을 주석 해제합니다. 해당 작업은 위의 *Only Find KnowledgComponent*와 함께 쓰시는 것을 권장드립니다.
+Workspace 내부의 MC_Graph.py을 edit open하여 **414번째 줄**을 주석 해제합니다. 해당 작업은 위의 *Only Find KnowledgComponent*와 함께 쓰시는 것을 권장드립니다.
 종료되면 matplotlib와 networkx를 통해 Graph Window가 나타납니다.
 
 <div align="center">
