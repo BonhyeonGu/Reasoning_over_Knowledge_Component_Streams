@@ -10,12 +10,12 @@
 
 <div align="center">
 
-![z1](https://user-images.githubusercontent.com/24387014/209905568-c3955e29-59c7-46c9-8d49-6be6adf2af73.gif)
+![01](https://user-images.githubusercontent.com/24387014/209906029-d1b0ae5b-fd30-4fbd-8811-15f9377fd43d.gif)
 
 </div>
 
 유튜브 영상의 Knowledge Component를 출력하는 프로그램입니다.
-대부분 처리하기 위해 미리 가공된 Wikipedia Data를 사용하며 오직 하나의 속성만 크롤링, 캐싱합니다.
+대부분 처리하기 위해 미리 가공된 Wikipedia Data를 사용하며 하나의 속성은 크롤링, 캐싱합니다.
 
 ##
 
