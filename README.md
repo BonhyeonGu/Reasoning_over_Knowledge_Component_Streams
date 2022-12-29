@@ -2,7 +2,7 @@
 
 <h1>Reasoning over Knowledge Component Streams</h1>
 
-![d](https://img.shields.io/badge/-Python-3776AB?style=flat-square&logo=python&logoColor=FFFFFF) ![d](https://img.shields.io/badge/-Flask-000000?style=flat-square&logo=flask&logoColor=FFFFFF)  ![d](https://img.shields.io/badge/-JS-F7DF1E?style=flat-square&logo=javascript&logoColor=FFFFFF) 
+![d](https://img.shields.io/badge/-Python3-3776AB?style=flat-square&logo=python&logoColor=FFFFFF) ![d](https://img.shields.io/badge/-Flask-000000?style=flat-square&logo=flask&logoColor=FFFFFF)  ![d](https://img.shields.io/badge/-Javascript-F7DF1E?style=flat-square&logo=javascript&logoColor=FFFFFF) 
 
 </div>
 
@@ -15,11 +15,21 @@
 </div>
 
 유튜브 영상의 Knowledge Component를 출력하는 프로그램입니다.
-대부분 처리하기 위해 미리 가공된 Wikipedia Data를 사용하며 하나의 속성은 크롤링, 캐싱합니다.
+대부분 처리하기 위해 미리 가공된 Wikipedia Data를 사용하며 하나의 속성을 크롤링, 캐싱합니다.
 
-##
+## How to Install & Run (Docker)
 
-## How to Install
+reposit에 동봉된 Dockerfile, [docker-compose](https://docs.docker.com/compose/install/)로 컨테이너로 설치하여 사용 가능합니다.  
+workspace 내에서 아래의 명령어를 입력하고 http://127.0.0.1:5050 으로 접속 가능합니다.
+
+```bash
+docker-compose up -d
+```
+
+해당 도커파일은 빌드시 dump된 파일들을 github에서 내려받습니다. 따라서 인터넷이 되는 환경에서만 빌드가 가능하며  
+약 한 시간의 시간이 소요될 수 있습니다.
+
+## How to Install (Bare Metal)
 
 해당 프로그램은 아래의 추가적 Python Module들을 필요로 합니다.
 
@@ -28,38 +38,38 @@
  - beautifulsoup4
  - lxml
  - numpy
- - nltk (추가 설치 필요, Workspace 내부의 nltk_install.py로 처리할 수 있습니다.)
+ - nltk (추가 설치 필요, workspace 내부의 nltk_install.py로 처리할 수 있습니다.)
  - matplotlib
  - networkx
 
 해당 프로그램은 큰 자료구조를 상시 머물게 하며 작동됩니다. 따라서 최소 아래의 사양이 필요합니다.
  - RAM : 16GB
- - Workspace : 20GB
+ - Workspace : 20GB (실행 케이스에 따라 더 필요할 수 있음)
 
-다음은 자료구조를 Dump한 파일들이 필요합니다. 해당 Reposit의 [Releases](https://github.com/BonhyeonGu/Reasoning_over_Knowledge_Component_Streams/releases)에서 확인 가능합니다.  
-모두 내려받은 후 Workspace에 넣습니다.  
-'backlinksZip.7z' 는 분할 압축 되어있으니 압축을 풀고 내용만 Workspace 내에 위치하면 되며, 압축파일은 삭제해도 무방합니다.
+다음은 자료구조를 Dump한 파일들이 필요합니다. 해당 reposit의 [Releases](https://github.com/BonhyeonGu/Reasoning_over_Knowledge_Component_Streams/releases)에서 확인 가능합니다.  
+모두 내려받은 후 workspace에 넣습니다.  
+'backlinksZip.7z' 는 분할 압축 되어있으니 압축을 풀고 내용만 workspace 내에 위치하면 되며, 압축파일은 삭제해도 무방합니다.
 
-다음은 Workspace 내에 driectory 두 개를 다음 이름으로 생성합니다.
+다음은 workspace 내에 driectory 두 개를 다음 이름으로 생성합니다.
 
  - pr0dens
  - backlinks
 
-이후 Workspace내부의 unzipBacklinks.py를 실행합니다. all_clear가 출력되어야 완료되었음을 나타냅니다. 이 작업이 완료되면 driectory-backlinks가 채워진 것을 확인할 수 있습니다.
+이후 workspace내부의 unzipBacklinks.py를 실행합니다. all_clear가 출력되어야 완료되었음을 나타냅니다. 이 작업이 완료되면 driectory-backlinks가 채워진 것을 확인할 수 있습니다.
 
 아래는 준비가 완료되었을 때의 조회입니다. ('nohup.out'은 linux background가 생성함)
 ![clear](https://user-images.githubusercontent.com/24387014/184473483-f47834f2-b9d6-45a7-82db-23885925cdd0.PNG)
 
-## How to Run
+## How to Run (Bare Metal)
 
 ### Run : Web Service
 
-Workspace 내부의 app.py로 flask run 명령어를 통하여 웹 서비스를 실행할 수 있습니다.  
+workspace 내부의 app.py로 flask run 명령어를 통하여 웹 서비스를 실행할 수 있습니다.  
 http://127.0.0.1:5050 으로 접속 가능합니다.
 
 ### Debug : Only Find KnowledgComponent
 
-Workspace 내부의 ComponentExtractor.py을 edit open하여 92번째 줄을 주석 해제합니다.  
+workspace 내부의 ComponentExtractor.py을 edit open하여 92번째 줄을 주석 해제합니다.  
 해당 메소드의 각 인자는 youtube url, Second of Second of Split Segmen를 뜻합니다. 원하는 대로 edit 후 open된 ComponentExtractor.py 자체를 실행합니다.  
 KnowledgComponent 가 Buffer에 출력됩니다.
 
@@ -67,7 +77,7 @@ KnowledgComponent 가 Buffer에 출력됩니다.
 
 ### Debug : Visualization Graph
 
-Workspace 내부의 MC_Graph.py을 edit open하여 **414번째 줄**을 주석 해제합니다. 해당 작업은 위의 *Only Find KnowledgComponent*와 함께 쓰시는 것을 권장드립니다.
+workspace 내부의 MC_Graph.py을 edit open하여 __414번째 줄__을 주석 해제합니다. 해당 작업은 위의 *Only Find KnowledgComponent*와 함께 쓰시는 것을 권장드립니다.
 종료되면 matplotlib와 networkx를 통해 Graph Window가 나타납니다.
 
 <div align="center">
@@ -110,7 +120,7 @@ Segment를 나눌 기준이 되는 시간(초)를 정의합니다.
 만약 해당 값을 False로 정의한다면, 한 Segment속에 동일한 Mention이 접수될 때 필터링 됩니다. 
 
 ### 5. Whether of Output Structure (Default Triple)
-
+	
 결과를 보기 편하게 Knowledge Component 형식으로 표시하거나 Triple 형식으로 출력하기를 결정합니다.
 Triple 타입은 다음 프로젝트에 사용할 예정입니다.
 
