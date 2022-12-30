@@ -143,14 +143,14 @@ class App:
         # Don't forget to close the driver connection when you are finished with it
         self.driver.close()
 
-    def create_graph(self, componantList, videoList):
+    def create_graph(self, componantList, videoList, debug:bool = False):
         with self.driver.session(database="neo4j") as session:
             # Write transactions allow the driver to handle retries and transient errors
             result = session.write_transaction(
-                self._create_graph, componantList, videoList)
+                self._create_graph, componantList, videoList, debug)
             
     @staticmethod
-    def _create_graph(tx, componantList, videoList):
+    def _create_graph(tx, componantList, videoList, debug:bool = False):
         #자체제작 함수
 
         #모든 컴포넌트 노드 생성
@@ -176,7 +176,8 @@ class App:
                 #비디오노드와 컴포넌트 노드 연결시키면서 콘솔창에 출력
                 try:
                     for row in result:
-                        print("Created relationship between video:{v}, componant:{c}".format(
+                        if debug:
+                            print("Created relationship between video:{v}, componant:{c}".format(
                         v=row["v"]["data"], c=row["c"]["data"]))
                 
                 # Capture any errors along with the query and data for traceability
@@ -184,22 +185,6 @@ class App:
                     logging.error("{query} raised an error: \n {exception}".format(
                         query=query, exception=exception))
                     raise
-
-    def find_person(self, person_name):
-        with self.driver.session(database="neo4j") as session:
-            result = session.read_transaction(self._find_and_return_person, person_name)
-            for row in result:
-                print("Found person: {row}".format(row=row))
-
-    @staticmethod
-    def _find_and_return_person(tx, person_name):
-        query = (
-            "MATCH (p:Person) "
-            "WHERE p.name = $person_name "
-            "RETURN p.name AS name"
-        )
-        result = tx.run(query, person_name=person_name)
-        return [row["name"] for row in result]
 
     def delete_all_data(self):
         with self.driver.session(database="neo4j") as session:
