@@ -17,6 +17,8 @@
 유튜브 영상의 Knowledge Component를 출력하는 프로그램입니다.
 대부분 처리하기 위해 미리 가공된 Wikipedia Data를 사용하며 하나의 속성을 크롤링, 캐싱합니다.
 
+해당 서비스는 [Project-ROKC](https://github.com/BonhyeonGu/Project-ROKC)의 일부분 입니다.
+
 ## How to Install & Run (Docker)
 
 reposit에 동봉된 Dockerfile, [docker-compose](https://docs.docker.com/compose/install/)로 컨테이너로 설치하여 사용 가능합니다.  
@@ -64,7 +66,11 @@ docker-compose up -d
 
 ### Run : Web Service
 
-workspace 내부의 app.py로 flask run 명령어를 통하여 웹 서비스를 실행할 수 있습니다.  
+workspace 내부의 app.py로
+```bash
+flask run
+```
+을 통하여 웹 서비스를 실행할 수 있습니다.  
 http://127.0.0.1:5050 으로 접속 가능합니다.
 
 ### Debug : Only Find KnowledgComponent
