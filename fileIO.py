@@ -23,6 +23,7 @@ class FileIO():
         #-------------------------------------------------------------------
         with open(local + 'anchorData.pkl', 'rb') as f:
             self.dict_full = pic.load(f)
+        print("Ready to ROKCS")
 
     #encode/decode----------------------------------------------------
     def nameEncode(self, s:str):
