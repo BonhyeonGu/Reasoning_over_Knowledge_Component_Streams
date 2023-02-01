@@ -12,7 +12,6 @@ class FileIO():
         self.REVERS_SLASH = "~R~"
         self.DOUBLE_DOT = "~P~"
         self.SINGLE_DOT = "~O~"
-        self.nameBack = local + 'backlinks/'
         self.namePr0den = local + 'pr0dens/'
        
         self.craw = Crawling()
@@ -23,6 +22,9 @@ class FileIO():
         #-------------------------------------------------------------------
         with open(local + 'anchorData.pkl', 'rb') as f:
             self.dict_full = pic.load(f)
+
+        with open(local + 'backlinksSets.pkl', 'rb') as f:
+            self.dict_back = pic.load(f)
         print("Ready to ROKCS")
 
     #encode/decode----------------------------------------------------
@@ -50,10 +52,7 @@ class FileIO():
 
     #dump
     def getBacklinks(self, title:str):
-        fileName = self.nameBack + title
-        with open(fileName,'rb') as f:
-            ret = pic.load(f)
-        return ret
+        return self.dict_back[title]
 
     def getPR0den(self, anchorText):
         fileName = self.namePr0den + self.nameEncode(anchorText)

@@ -2,10 +2,10 @@
 __pycache*
 Cache/
 .DS_Store
-backlinksZip
 
 anchorData.pkl
 ComIDToTitle.npy
 ComTittleToID.pkl
+backlinksSets.pkl
 backlinks/
 pr0dens/
