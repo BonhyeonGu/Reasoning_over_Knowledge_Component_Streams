@@ -170,7 +170,7 @@ class Graph:
         
         #backlink집합을 가지는 튜플을 만든다
         for i in conceptVertex:
-            backlink_list.append(GetBackLinks(i.name))
+            backlink_list.append(GetBackLinks(i.name + "_backlinks.pickle"))
         backlink_tuple = tuple(backlink_list)
 
         i = -1
